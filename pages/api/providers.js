@@ -22,7 +22,7 @@ export default async function handler (req, res) {
         console.log('POST new provider: ',req.body);
         //const user = await User.create(req.body)
         //res.status(201).json({ success: true, data: user })
-        const aNewProvider = new Provider({ uniqueIdentification: req.body["assetInfoToAdd"]["uniqueIdentification"], name: req.body["assetInfoToAdd"]["name"], assetType: req.body["assetInfoToAdd"]["assetType"] });
+        const aNewProvider = new Provider({ uniqueIdentification: req.body["uniqueIdentification"], name: req.body["name"], assetType: req.body["assetType"] });
         await aNewProvider.save();
         res.status(201).json({ success: true, data: aNewProvider })
       } catch (error) {

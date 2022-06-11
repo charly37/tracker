@@ -4,6 +4,7 @@ import { useForm } from '@mantine/form';
 import { NumberInput } from '@mantine/core';
 import { RadioGroup, Radio } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
+import {useRouter} from "next/router";
 
 function ContainedInputs() {
 
@@ -53,6 +54,27 @@ function ContainedInputs() {
 
 
 }
+//const { query } = useRouter();
+//console.log('query: ',query);
+
+
+const router = useRouter()
+useEffect(() => {
+  //const router = useRouter()  //can not be call here - forbiden
+  if (!router.isReady) return;
+
+  console.log(router.query);
+
+  const params = router.query
+  console.log("router ready: ", params);
+  if (router.query['holdinginfo']){
+  form.setFieldValue('holdingInfo',router.query['holdinginfo'])}
+  //setLoading(true)
+  //loadData(portfolio)
+
+}, [router.isReady]) // added router.isReady after https://stackoverflow.com/questions/61040790/userouter-withrouter-receive-undefined-on-query-in-first-render It was empty before. just []
+
+
 
   return (
       

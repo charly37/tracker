@@ -78,7 +78,7 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
   const aDelta=Math.abs(aNow-aPreviousRefreshDate)/1000
   //console.log('aDelta:', aDelta);
   if(aDelta < 3600){
-    //console.log('Refresh not needed');
+    console.log('Refresh not needed');
     return
   }
   //console.error('Entering refresh for : ', this.uniqueIdentification);
@@ -91,13 +91,16 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
     const aTicker=aTickerAnnotation["value"];
     console.error('working on refresh for stock: ', aTicker);
 
-    fetch("https://cloud.iexapis.com/stable/stock/" + aTicker + "/quote?token=" + process.env.IEX_KEY, {
+    let aUrl = "https://cloud.iexapis.com/stable/stock/" + aTicker + "/quote?token=" + process.env.IEX_KEY
+    console.log('calling stock price request with Url:', aUrl);
+
+    fetch(aUrl, {
       "method": "GET",
       "headers": {}
     })
       .then(response => response.json())
       .then(data => {
-        //console.log('Success:', data);
+        console.log('Success:', data);
         this.unitValue = data["latestPrice"]
         if (aRefreshNameToo){
           //console.log('Updating name too');
@@ -146,7 +149,7 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
 
   }
   else if (this.assetType == "option"){
-    //console.log('returning from Holding refresh');
+    console.log('refresh option info');
     const aTickerAnnotation=this.annotations.find( ({ key }) => key === 'ticker' );
     //console.error('working on refresh for stock: ', aTickerAnnotation);
 

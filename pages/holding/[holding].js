@@ -188,11 +188,15 @@ export function TableScrollArea2() {
     <div>
       Name: {holdingDetail.name}<br />
       uniqueIdentification: {holdingDetail.uniqueIdentification}<br />
-      holdingType: {holdingDetail.holdingType}<br />
+      holdingType: {holdingDetail.assetType}<br />
       unitValue: {holdingDetail.unitValue}<br />
       targetAllocation: {holdingDetail.targetAllocation}<br />
       portfolio: <Link href={"/portfolio/" + holdingDetail.portfolio}>
         <a>{holdingDetail.portfolio}</a>
+      </Link>
+      <br />
+      <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
+        <a>Add Transaction</a>
       </Link>
       <br />
 
