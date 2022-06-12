@@ -291,7 +291,7 @@ export function TableScrollArea2() {
     <div>
       Name: {portfolioDetail.name}<br />
       uniqueIdentification: {portfolioDetail.uniqueIdentification}<br />
-      totalValue: {portfolioDetail.totalValue}<br />
+      totalValue: {portfolioDetail.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}<br />
       totalCurrentAllocation: {portfolioDetail.totalCurrentAllocation}<br />
       totalTargetAllocation: {portfolioDetail.totalTargetAllocation}<br />
 

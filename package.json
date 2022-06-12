@@ -20,10 +20,12 @@
     "@mantine/prism": "^4.2.5",
     "@mantine/rte": "^4.2.5",
     "@mantine/spotlight": "^4.2.5",
+    "chart.js": "^3.8.0",
     "dayjs": "^1.11.2",
     "mongoose": "^6.3.4",
     "next": "12.1.6",
     "react": "18.1.0",
+    "react-chartjs-2": "^4.2.0",
     "react-dom": "18.1.0"
   },
   "devDependencies": {

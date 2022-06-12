@@ -17,12 +17,12 @@ export default async function handler (req, res) {
         console.log('GET new Holding: ',req.query);
         if (req.query.hasOwnProperty("holding")){
           const aHoldingIdKey = req.query["holding"]
-          console.log('specific holding specified: ',aHoldingIdKey);
+          //console.log('specific holding specified: ',aHoldingIdKey);
           const holdings = await Holding.find({uniqueIdentification : aHoldingIdKey})
           res.status(200).json({ success: true, data: holdings })
         }else if (req.query.hasOwnProperty("portfolio")){
           const aPortfolioKey = req.query["portfolio"]
-          console.log('specific portfolio specified: ',aPortfolioKey);
+          //console.log('specific portfolio specified: ',aPortfolioKey);
           const holdings = await Holding.find({portfolio : aPortfolioKey})
           const holdings2 = await Holding.aggregate([
             {
@@ -39,8 +39,8 @@ export default async function handler (req, res) {
               },
             },
           ])
-          console.log('holdings: ',holdings);
-          console.log('holdings2: ',holdings2);
+          //console.log('holdings: ',holdings);
+          //console.log('holdings2: ',holdings2);
           res.status(200).json({ success: true, data: holdings2 })
         }else{
           const holdings = await Holding.find({})
@@ -59,17 +59,17 @@ export default async function handler (req, res) {
         //console.log('id',id);
         //Hardcode unit value since it is refresh by another script
         const aNewHolding = new Holding({ uniqueIdentification: id, name: req.body["name"], assetType: req.body["assetType"], portfolio: req.body["portfolio"],unitValue: 5,labels: req.body["labels"]});
-        console.log('aNewHolding: ',aNewHolding);
+        //console.log('aNewHolding: ',aNewHolding);
         let aAnnotations = req.body["annotations"]
-        console.log('aAnnotations: ',aAnnotations);
+        //console.log('aAnnotations: ',aAnnotations);
         aAnnotations.forEach(element => {
           // ...use `element`...
-          console.log('working on : ',element);
+          //console.log('working on : ',element);
           aNewHolding.annotations.push(element)
         });
-        console.log('aAnnotations: ',aNewHolding);
+        //console.log('aAnnotations: ',aNewHolding);
         let aValidationResults = await aNewHolding.myvalidation()
-        console.log('aValidationResults: ',aValidationResults);
+        //console.log('aValidationResults: ',aValidationResults);
         await aNewHolding.save();
         res.status(201).json({ success: true, data: aNewHolding })
       } catch (error) {
