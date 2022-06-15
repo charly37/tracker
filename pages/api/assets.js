@@ -15,9 +15,9 @@ export default async function handler (req, res) {
     case 'GET':
       try {
         console.log('GET new Asset: ',req.query);
-        if (req.query.hasOwnProperty("Asset")){
+        if (req.query.hasOwnProperty("asset")){
           const aAssetIdKey = req.query["asset"]
-          //console.log('specific asset specified: ',aAssetIdKey);
+          console.log('specific asset specified: ',aAssetIdKey);
           const assets = await Asset.find({uniqueIdentification : aAssetIdKey})
           res.status(200).json({ success: true, data: assets })
         }else if (req.query.hasOwnProperty("portfolio")){
