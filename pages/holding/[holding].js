@@ -15,6 +15,7 @@ export function TableScrollArea2() {
       "unitValue": 20000,
       "targetAllocation": 1,
       "holdings": [],
+      "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
       "portfolio": "50713a3c-ae27-427a-b3b5-214a617a3d39",
       "valueByProviders": { a: 1, b: 2 }
     })
@@ -160,6 +161,18 @@ export function TableScrollArea2() {
   //console.log("holdingDetail.targetAllocation: ",holdingDetail.targetAllocation);
   //console.log("holdingDetail.holdings: ",holdingDetail.holdings);
 
+  const aAnnotationsForHolding = holdingDetail.annotations.map((row) => (
+    <li key={row.key}>
+      {row.key}:{row.value}
+    </li>
+  ));
+
+  const aValueByPRoviders = Object.entries(holdingDetail.valueByProviders).map((row) => (
+    <li key={row}>
+      {row[0]}: {row[1].toLocaleString(undefined, { maximumFractionDigits: 2 })}
+    </li>
+  ));
+
   let aTransactionsForTable = []
 
   if (holdingDetail.holdings) {
@@ -195,18 +208,28 @@ export function TableScrollArea2() {
         <a>{holdingDetail.portfolio}</a>
       </Link>
       <br />
+      asset: <Link href={"/asset/" + holdingDetail.assetInfo}>
+        <a>{holdingDetail.assetInfo}</a>
+      </Link>
+      <br />
       <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
         <a>Add Transaction</a>
       </Link>
       <br />
 
+      annotations:
+      <ul>
+        {aAnnotationsForHolding}
+      </ul>
+      <br />
+
       totalValue: {holdingDetail.totalValue}<br />
       <br />
-      Values by providers: <br />
+      Values by providers:
+      <ul>
+        {aValueByPRoviders}
+      </ul>
       <br />
-
-      {Object.entries(holdingDetail.valueByProviders)}
-
       <br />
       Transactions: <br />
       <br />

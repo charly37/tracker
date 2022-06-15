@@ -1,7 +1,7 @@
 // api/users.js
 
 import dbConnect from '../../lib/dbConnect'
-import Holding from '../../models/Holding'
+import Asset from '../../models/Asset'
 
 export default async function handler (req, res) {
   const { method } = req
@@ -11,11 +11,11 @@ export default async function handler (req, res) {
   switch (method) {
     case 'GET':
       try {
-        const holdings = await Holding.find({})
-        holdings.forEach(aOneHolding => {
-            //console.log('refreshing aOneHolding: ',aOneHolding);
-            aOneHolding.refresh()
-            //console.log('refresh aOneHolding: ',aRefreshStatus);
+        const assets = await Asset.find({})
+        assets.forEach(aOneAsset => {
+            //console.log('refreshing aOneAsset: ',aOneAsset);
+            aOneAsset.refresh()
+            //console.log('refresh aOneAsset: ',aRefreshStatus);
         });
         res.status(200).json({ success: true })
       } catch (error) {
@@ -25,7 +25,7 @@ export default async function handler (req, res) {
       break
     case 'POST':
       try {
-        console.log('POST new holding: ',req.body);
+        console.log('POST new asset: ',req.body);
         res.status(201).json({ success: true })
       } catch (error) {
         console.log('error: ',error);

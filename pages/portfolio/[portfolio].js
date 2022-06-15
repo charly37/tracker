@@ -22,6 +22,7 @@ export function TableScrollArea2() {
         "uniqueIdentification": "DIS",
         "assetType": "stock",
         "labels": ["fun", "foun"],
+        "asset":[{"annotations": [{ "key": "clep1", "value": "valp1" }, { "key": "clep2", "value": "valp2" }]}],
         "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
         "targetAllocation": 1
       },
@@ -85,6 +86,8 @@ export function TableScrollArea2() {
         let aDiffTargetCurrent = Math.abs(aOneHolding.currentAllocation - aTargetAlloc)
         if (aDiffTargetCurrent > 0.20) {
           aOneHolding.labels.push("FarFromTarget")
+          let aWarningAlloc={key:"warning",value:"FarFromTarget"}
+          aOneHolding.annotations.push(aWarningAlloc)
         }
       }
 
@@ -129,19 +132,19 @@ export function TableScrollArea2() {
               aOneHolding.holdings.push(aOneTransaction)
 
               if (aOneTransaction.action == "buy") {
-                aOneHolding.totalValue = aOneHolding.totalValue + aOneTransaction.quantity * aOneHolding.unitValue
-                aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.unitValue
+                aOneHolding.totalValue = aOneHolding.totalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
+                aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
               }
               else {
-                aOneHolding.totalValue = aOneHolding.totalValue - aOneTransaction.quantity * aOneHolding.unitValue
-                aTotalValue = aTotalValue - aOneTransaction.quantity * aOneHolding.unitValue
+                aOneHolding.totalValue = aOneHolding.totalValue - aOneTransaction.quantity * aOneHolding.asset[0].unitValue
+                aTotalValue = aTotalValue - aOneTransaction.quantity * aOneHolding.asset[0].unitValue
               }
             }
             else {
               //should never be a sell. how can first action on an holding be a sell ?
               aOneHolding.holdings = [aOneTransaction]
-              aOneHolding.totalValue = aOneTransaction.quantity * aOneHolding.unitValue
-              aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.unitValue
+              aOneHolding.totalValue = aOneTransaction.quantity * aOneHolding.asset[0].unitValue
+              aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
             }
           });
 
@@ -244,45 +247,82 @@ export function TableScrollArea2() {
       //console.log("No target allocation in this portfolio");
     }
 
-    if (aTargetAlloc == "yes") {
-      let aRows = holdings.map((row) => (
-        <tr key={row.name}>
+    //if (aTargetAlloc == "yes") {
+
+      let aRows2 = []
+      holdings.forEach(aOneHolding => {
+        console.log("working on holding: ", aOneHolding);
+        let aPossibleWarnings = aOneHolding.annotations.find(x => x.key === 'warning')
+        let aAllPossibleWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'warning')
+        console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
+        let aWarning = [];
+        if (aPossibleWarnings){
+          console.log("adding warning: ",aPossibleWarnings);
+          aWarning.push(aPossibleWarnings.value)
+        }
+        if (aAllPossibleWarningsAssetLevel){
+          aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+          console.log("adding a warning from asset: ",aOneWarningFromAsset);
+          aWarning.push(aOneWarningFromAsset.value)
+        });
+        }
+        //convert to html
+        const aWarningsAsJavascript = aWarning.map((row) => (
+          <Badge color="red">
+            {row}
+          </Badge>
+        ));
+
+        let aPossibleTargetAlloc = aOneHolding.annotations.find(x => x.key === 'TargetAllocation')
+        let aTartgetAnnot;
+        if (aPossibleTargetAlloc){
+          console.log("adding target alloc");
+          aTartgetAnnot = <td>{aPossibleTargetAlloc.value}</td>
+        }
+        let aOneHoldingEntry = (
+          <tr key={aOneHolding.name}>
           <td>
-            <Link href={"/holding/" + row.uniqueIdentification}>
-              <a>{row.name}</a>
+            <Link href={"/holding/" + aOneHolding.uniqueIdentification}>
+              <a>{aOneHolding.name}</a>
             </Link>
           </td>
-          <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
-          <td>{row.assetType}</td>
-          <td>{row.labels.join()}<Badge>Badge</Badge></td>
-          <td>{row.annotations.find(x => x.key === 'TargetAllocation').value}</td>
-          <td>{row.currentAllocation}</td>
-          <td>{row.unitValue}</td>
-          <td>{row.totalValue}</td>
+          <td>{aOneHolding.annotations.find(x => x.key === 'myNotes').value}</td>
+          <td>{aOneHolding.assetType}</td>
+          <td>{aWarningsAsJavascript}</td>
+          {aTartgetAnnot}
+          <td>{aOneHolding.currentAllocation}</td>
+          <td>{aOneHolding.asset[0].unitValue}</td>
+          <td>{aOneHolding.totalValue}</td>
         </tr>
-      ));
-      return aRows
-    }
-    else {
+          );
+          
 
 
-      let aRows3 = holdings.map((row) => (
-        <tr key={row.name}>
-          <td>
-            <Link href={"/holding/" + row.uniqueIdentification}>
-              <a>{row.name}</a>
-            </Link>
-          </td>
-          <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
-          <td>{row.assetType}</td>
-          <td>{row.labels.join()}<Badge>Badge</Badge></td>
-          <td>{row.currentAllocation}</td>
-          <td>{row.unitValue}</td>
-          <td>{row.totalValue}</td>
-        </tr>
-      ));
-      return aRows3
-    }
+
+        aRows2.push(aOneHoldingEntry)
+  
+      });
+      return aRows2
+
+      // let aRows = holdings.map((row) => (
+      //   <tr key={row.name}>
+      //     <td>
+      //       <Link href={"/holding/" + row.uniqueIdentification}>
+      //         <a>{row.name}</a>
+      //       </Link>
+      //     </td>
+      //     <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
+      //     <td>{row.assetType}</td>
+      //     <td>{row.labels.join()}<Badge color="red">Badge</Badge></td>
+      //     <td>{row.annotations.find(x => x.key === 'TargetAllocation').value}</td>
+      //     <td>{row.currentAllocation}</td>
+      //     <td>{row.unitValue}</td>
+      //     <td>{row.totalValue}</td>
+      //   </tr>
+      // ));
+      // return aRows
+    
+
 
   }
 

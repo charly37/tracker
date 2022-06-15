@@ -13,12 +13,11 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Start here 
-          <Link href="/portfolios">
-    <a>Portfolios</a>
-  </Link>
-        </h1>
+        Website use to track all my investments on all asset class on all platforms<br></br>
+        Start here
+        <Link href="/portfolios">
+          <a>Portfolios</a>
+        </Link>
       </main>
     </div>
   )

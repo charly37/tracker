@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const HoldingSchema = new mongoose.Schema({
+const AssetSchema = new mongoose.Schema({
   uniqueIdentification: String,
   name: String,
   assetType: {
@@ -14,21 +14,16 @@ const HoldingSchema = new mongoose.Schema({
     key: String,
     value: String
   }],
-  labels: [{
-    type: String
-  }],
-  portfolio: String,
-  assetInfo: String
 })
 
-HoldingSchema.methods.myvalidation = function (aRefreshNameToo = true) {
+AssetSchema.methods.myvalidation = function (aRefreshNameToo = true) {
   //console.log('Entering validation for : ', this.uniqueIdentification);
 
   //Mandatory annotation for notes for all asset type
-  const aCheckHoldingTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'MyNotes');
-  console.log(aCheckHoldingTypeMandatoryAnnotation)
+  const aCheckAssetTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'MyNotes');
+  console.log(aCheckAssetTypeMandatoryAnnotation)
 
-  if (!aCheckHoldingTypeMandatoryAnnotation) {
+  if (!aCheckAssetTypeMandatoryAnnotation) {
     console.error('Missing mandatory annotation for assetType');
     throw 'Missing mandatory annotation for assetType'
   }
@@ -94,12 +89,83 @@ function setStockInfo(iTicker) {
 
 // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
 function getCompanyAndStockInfo(iTicker) {
-  //console.log("building promise with holding: ", iHolding);
+  //console.log("building promise with Asset: ", iAsset);
   return Promise.all([getCompanyInfo(iTicker), setStockInfo(iTicker)])
 }
 
+AssetSchema.methods.refreshAnnotations = function (iCompanyInfo, iStockInfo) {
+  console.log("Refreshing annotation");
 
-HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
+  //clean up
+  // const aOldWarning = this.annotations.find(({ value }) => value === 'FiftyDayAverageChangePercentWarning');
+  //   if (aOldWarning) {
+  //     console.log('clean up needed');
+  //     console.log("this.annotations BEFORE: ",this.annotations)
+  //     this.annotations = this.annotations.filter(e => e.value !== 'FiftyDayAverageChangePercentWarning')
+  //     console.log("this.annotations AFTER: ",this.annotations)
+  //   }
+
+  let aRawValue = iStockInfo["data"][0]["fiftyTwoWeekLowChangePercent"] * 100
+  if (aRawValue < 10) {
+
+    //console.log("We are close to 52W low. Adding annotation");
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '50daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      //console.log('Warning already there. Nothing to do');
+    }
+    else {
+      //console.log('aTickerAnnotation do not exists. creating it');
+      let aNewAnotation = { key: "warning", value: "50daysLow" }
+      this.annotations.push(aNewAnotation)
+    }
+
+
+  }
+  else
+  {
+    //need to remove it if we are not anymore close to 50 days low
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '50daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log("We are not close to 52W low. need to remove it");
+      console.log("this.annotations BEFORE: ",this.annotations)
+      this.annotations = this.annotations.filter(e => e.key !== '50daysLow')
+      console.log("this.annotations AFTER: ",this.annotations)
+    }
+    
+  }
+
+  aRawValue = iStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
+  if (aRawValue < -10) {
+
+    //console.log("We are below -10% compare to 200d avg. Adding annotation");
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      //console.log('Warning already there. Nothing to do');
+    }
+    else {
+      //console.log('aTickerAnnotation do not exists. creating it');
+      let aNewAnotation = { key: "warning", value: "200daysLow" }
+      this.annotations.push(aNewAnotation)
+    }
+
+
+  }
+  else
+  {
+    //need to remove it if we are not anymore close to 50 days low
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log("We are not close to -10% compare to 200d avg. need to remove it");
+      console.log("this.annotations BEFORE: ",this.annotations)
+      this.annotations = this.annotations.filter(e => e.key !== '200daysLow')
+      console.log("this.annotations AFTER: ",this.annotations)
+    }
+    
+  }
+}
+
+
+AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
   console.error('Entering refresh for : ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
   //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
@@ -123,8 +189,8 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
 
     getCompanyAndStockInfo(aTicker)
       .then(([aCompanyInfo, aStockInfo]) => {
-        console.log('aStockInfo:', aStockInfo["data"][0]);
-        console.log('aCompanyInfo:', aCompanyInfo["data"]["yield"]);
+        //console.log('aStockInfo:', aStockInfo["data"][0]);
+        //console.log('aCompanyInfo:', aCompanyInfo["data"]["yield"]);
 
         this.unitValue = aStockInfo["data"][0]["regularMarketPrice"]
         //let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
@@ -183,6 +249,7 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
           let aNewAnotation = { key: "yield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
           this.annotations.push(aNewAnotation)
         }
+        this.refreshAnnotations(aCompanyInfo, aStockInfo)
 
 
         //console.log('Saving');
@@ -306,10 +373,10 @@ HoldingSchema.methods.refresh = function (aRefreshNameToo = false) {
       });
   }
   else {
-    console.error('unknow Holding type:', this);
+    console.error('unknow Asset type:', this);
   }
-  //console.log('returning from Holding refresh');
+  //console.log('returning from Asset refresh');
   return this.name
 }
 
-module.exports = mongoose.models.Holding || mongoose.model('Holding', HoldingSchema)
+module.exports = mongoose.models.Asset || mongoose.model('Asset', AssetSchema)
