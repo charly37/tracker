@@ -27,8 +27,7 @@ export function TableScrollArea() {
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getHoldingsAndTransactions() {
-    console.log("building promise");
-    //
+    //console.log("building promise");
     return Promise.all([getProviders()])
   }
 
@@ -38,7 +37,7 @@ export function TableScrollArea() {
       .then(([aProviders]) => {
         // both have loaded!
         //console.log("both have loaded");
-        console.log(aProviders);
+        //console.log(aProviders);
         //console.log(aProviders.data);
         setLoading(false)
         setProviders(aProviders.data)

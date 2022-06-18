@@ -250,31 +250,31 @@ export function TableScrollArea2() {
 
       let aRows2 = []
       holdings.forEach(aOneHolding => {
-        console.log("working on holding: ", aOneHolding);
+        //console.log("working on holding: ", aOneHolding);
         let aPossibleWarnings = aOneHolding.annotations.find(x => x.key === 'warning')
         let aPossibleGoodWarnings = aOneHolding.annotations.find(x => x.key === 'goodWarning')
         let aAllPossibleWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'warning')
         let aAllPossibleGoodWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'goodWarning')
-        console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
+        //console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
         let aWarning = [];
         let aGoodWarning = [];
         if (aPossibleWarnings){
-          console.log("adding warning: ",aPossibleWarnings);
+          //console.log("adding warning: ",aPossibleWarnings);
           aWarning.push(aPossibleWarnings.value)
         }
         if (aPossibleGoodWarnings){
-          console.log("adding good warning: ",aPossibleGoodWarnings);
+          //console.log("adding good warning: ",aPossibleGoodWarnings);
           aGoodWarning.push(aPossibleGoodWarnings.value)
         }
         if (aAllPossibleWarningsAssetLevel){
           aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
-          console.log("adding a warning from asset: ",aOneWarningFromAsset);
+          //console.log("adding a warning from asset: ",aOneWarningFromAsset);
           aWarning.push(aOneWarningFromAsset.value)
         });
         }
         if (aAllPossibleGoodWarningsAssetLevel){
           aAllPossibleGoodWarningsAssetLevel.forEach(aOneWarningFromAsset => {
-          console.log("adding a good warning from asset: ",aOneWarningFromAsset);
+          //console.log("adding a good warning from asset: ",aOneWarningFromAsset);
           aGoodWarning.push(aOneWarningFromAsset.value)
         });
         }
@@ -293,7 +293,7 @@ export function TableScrollArea2() {
         let aPossibleTargetAlloc = aOneHolding.annotations.find(x => x.key === 'TargetAllocation')
         let aTartgetAnnot;
         if (aPossibleTargetAlloc){
-          console.log("adding target alloc");
+          //console.log("adding target alloc");
           aTartgetAnnot = <td>{aPossibleTargetAlloc.value}</td>
         }
         let aOneHoldingEntry = (

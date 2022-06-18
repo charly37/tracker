@@ -27,8 +27,7 @@ export function TableScrollArea() {
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getHoldingsAndTransactions() {
-    console.log("building promise");
-    //
+    //console.log("building promise");
     return Promise.all([getPortfolios()])
   }
 

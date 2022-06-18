@@ -38,7 +38,6 @@ export function TableScrollArea2() {
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getAssetsAndTransactions(iAsset) {
     //console.log("building promise with asset: ", iAsset);
-    //
     return Promise.all([getTransactions(), getAsset(iAsset)])
   }
 
@@ -54,7 +53,7 @@ export function TableScrollArea2() {
       .then(([aTransactions, aAsset]) => {
         // both have loaded!
         //console.log("both have loaded");
-        console.log("aAsset: ", aAsset);
+        //console.log("aAsset: ", aAsset);
         //console.log(aTransactions.data);
         setLoading(false)
         let aAssetInDb = aAsset["data"][0]
@@ -88,7 +87,7 @@ export function TableScrollArea2() {
   if (!assetObj) return <p>No profile data3</p>
 
   //console.log('fetching UI end');
-  console.log("assetObj: ",assetObj);
+  //console.log("assetObj: ",assetObj);
 
   const aAnnotationsForAsset = assetObj.annotations.map((row) => (
     <li key={row.key + row.value}>

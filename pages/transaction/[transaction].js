@@ -51,7 +51,7 @@ export function TableScrollArea2() {
                 let aTrxByProviders = {}
                 // both have loaded!
                 //console.log("both have loaded");
-                console.log(aTransaction, aTransaction);
+                //console.log(aTransaction, aTransaction);
                 //console.log(aTransactions.data);
                 setLoading(false)
                 let aTransactionInDb = aTransaction["data"][0]
@@ -82,7 +82,7 @@ export function TableScrollArea2() {
     if (!transactionDetail) return <p>No profile data3</p>
 
     //console.log('fetching UI end');
-    console.log("transactionDetail: ", transactionDetail);
+    //console.log("transactionDetail: ", transactionDetail);
     //console.log("transactionDetail.targetAllocation: ",transactionDetail.targetAllocation);
     //console.log("transactionDetail.transactions: ",transactionDetail.transactions);
 

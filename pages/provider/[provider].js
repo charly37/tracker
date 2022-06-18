@@ -37,7 +37,7 @@ export function TableScrollArea2() {
         //getHoldingsAndProviderAndTransactions(iProviderId)//transaction in holdings now
         getHoldingsAndProvider(iProviderId)
             .then(([aProvider]) => {
-                console.log("aProvider: ", aProvider);
+                //console.log("aProvider: ", aProvider);
                 let aProviderObj = aProvider.data[0]
                 setLoading(false)
                 setProviderDetail(aProviderObj)

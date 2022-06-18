@@ -58,8 +58,8 @@ export function TableScrollArea2() {
         //console.log(aTransactions.data);
         setLoading(false)
         let aHoldingInDb = aHolding["data"][0]
-        console.log("aHoldingInDb: ",aHoldingInDb);
-        console.log("aHolding: ",aHolding);
+        //console.log("aHoldingInDb: ",aHoldingInDb);
+        //console.log("aHolding: ",aHolding);
         aHoldingInDb.trxs.forEach(aOneTransaction => {
           //console.log("aOneTransaction: ",aOneTransaction);
           if (aOneTransaction.holdingInfo == aHoldingInDb.uniqueIdentification) {
@@ -136,7 +136,7 @@ export function TableScrollArea2() {
   if (!holdingDetail) return <p>No profile data3</p>
 
   //console.log('fetching UI end');
-  console.log("holdingDetail: ",holdingDetail);
+  //console.log("holdingDetail: ",holdingDetail);
   //console.log("holdingDetail.targetAllocation: ",holdingDetail.targetAllocation);
   //console.log("holdingDetail.holdings: ",holdingDetail.holdings);
 
