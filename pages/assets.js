@@ -7,20 +7,21 @@ import Link from 'next/link';
 
 export function TableScrollArea() {
   const [isLoading, setLoading] = useState(false)
-  const [portfolios, setPortfolios] = useState(
+  const [assets, setAssets] = useState(
     [
       {
         "uniqueIdentification": "5145245",
         "name": "Long Term",
+        "assetType": "stock",
         "annotations": [{ "key": "myNotes", "value": "value1" }, { "key": "key2", "value": "value2" }]
       },
     ])
 
-  function getPortfolios() {
-    return fetch('http://localhost:3000/api/portfolios')
+  function getAssets() {
+    return fetch('http://localhost:3000/api/assets')
       .then((res) => res.json())
       .catch(error => {
-        console.error('There was an error to get portfolios!', error);
+        console.error('There was an error to get assets!', error);
       });
   };
 
@@ -29,19 +30,19 @@ export function TableScrollArea() {
   function getHoldingsAndTransactions() {
     console.log("building promise");
     //
-    return Promise.all([getPortfolios()])
+    return Promise.all([getAssets()])
   }
 
   // When this Promise resolves, both values will be available.
   function loadData() {
     getHoldingsAndTransactions()
-      .then(([aPortfolios]) => {
+      .then(([aAssets]) => {
         // both have loaded!
         //console.log("both have loaded");
-        //console.log(aPortfolios);
-        //console.log(aPortfolios.data);
+        //console.log(aAssets);
+        //console.log(aAssets.data);
         setLoading(false)
-        setPortfolios(aPortfolios.data)
+        setAssets(aAssets.data)
       })
   }
 
@@ -53,25 +54,30 @@ export function TableScrollArea() {
   }, [])
 
   if (isLoading) return <p>Loading...</p>
-  if (!portfolios) return <p>No portfolio to display</p>
+  if (!assets) return <p>No asset to display</p>
 
-  const rows = portfolios.map((row) => (
+  const rows = assets.map((row) => (
     <tr key={row.name}>
       <td>
-        <Link href={"/portfolio/" + row.uniqueIdentification}>
+        <Link href={"/asset/" + row.uniqueIdentification}>
           <a>{row.name}</a>
         </Link>
       </td>
+      <td>{row.assetType}</td>
       <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
     </tr>
   ));
 
   return (
     <div>
+            <Link href={"/addassets"}>
+        <a>add an Asset</a>
+      </Link>
       <Table>
         <thead>
           <tr>
             <th>name</th>
+            <th>assetType</th>
             <th>my Notes</th>
           </tr>
         </thead>

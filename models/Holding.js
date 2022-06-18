@@ -14,9 +14,6 @@ const HoldingSchema = new mongoose.Schema({
     key: String,
     value: String
   }],
-  labels: [{
-    type: String
-  }],
   portfolio: String,
   assetInfo: String
 })
@@ -31,37 +28,6 @@ HoldingSchema.methods.myvalidation = function (aRefreshNameToo = true) {
   if (!aCheckHoldingTypeMandatoryAnnotation) {
     console.error('Missing mandatory annotation for assetType');
     throw 'Missing mandatory annotation for assetType'
-  }
-
-  if (this.assetType == "stock") {
-    //console.log('extra check for stock');
-
-    const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
-    if (!aTickerAnnotation) {
-      throw 'Missing mandatory annotation for assetType'
-    }
-
-
-  } else if (this.assetType == "option") {
-
-    const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
-    if (!aTickerAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory ticker annotation for option'
-    }
-
-    const aUtickerAnnotation = this.annotations.find(({ key }) => key === 'uticker');
-    if (!aUtickerAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory uticker annotation for assetType'
-    }
-
-    const aExpirationAnnotation = this.annotations.find(({ key }) => key === 'expiration');
-    if (!aExpirationAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory expiration annotation for assetType'
-    }
-
   }
 
   console.log("all check OK")

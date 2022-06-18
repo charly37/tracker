@@ -18,12 +18,33 @@ export default async function handler (req, res) {
         if (req.query.hasOwnProperty("holding")){
           const aHoldingIdKey = req.query["holding"]
           //console.log('specific holding specified: ',aHoldingIdKey);
-          const holdings = await Holding.find({uniqueIdentification : aHoldingIdKey})
-          res.status(200).json({ success: true, data: holdings })
+          const holdings2 = await Holding.aggregate([
+            {
+              $match: {
+                uniqueIdentification: aHoldingIdKey,
+              },
+            },
+            {
+              $lookup: {
+                from: "transactions",
+                localField: "uniqueIdentification",
+                foreignField: "holdingInfo",
+                as: "trxs",
+              },
+            },
+            {
+              $lookup: {
+                from: "assets",
+                localField: "assetInfo",
+                foreignField: "uniqueIdentification",
+                as: "asset",
+              },
+            },
+          ])
+          res.status(200).json({ success: true, data: holdings2 })
         }else if (req.query.hasOwnProperty("portfolio")){
           const aPortfolioKey = req.query["portfolio"]
           //console.log('specific portfolio specified: ',aPortfolioKey);
-          const holdings = await Holding.find({portfolio : aPortfolioKey})
           const holdings2 = await Holding.aggregate([
             {
               $match: {

@@ -57,6 +57,13 @@ AssetSchema.methods.myvalidation = function (aRefreshNameToo = true) {
       throw 'Missing mandatory expiration annotation for assetType'
     }
 
+    const aMoneynessAnnotation = this.annotations.find(({ key }) => key === 'moneyness');
+    if (!aMoneynessAnnotation) {
+      console.warning('Missing optional annotation for aMoneynessAnnotation. Adding it');
+      let aMoneynessAnotation = { key: "moneyness", value: "unknow" }
+      this.annotations.push(aMoneynessAnotation)
+    }
+
   }
 
   console.log("all check OK")
@@ -93,8 +100,76 @@ function getCompanyAndStockInfo(iTicker) {
   return Promise.all([getCompanyInfo(iTicker), setStockInfo(iTicker)])
 }
 
-AssetSchema.methods.refreshAnnotations = function (iCompanyInfo, iStockInfo) {
+AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInfo) {
   console.log("Refreshing annotation");
+
+  //clean up
+  const aOldWarning = this.annotations.find(({ value }) => value === '50daysLow');
+  if (aOldWarning) {
+    console.log('clean up needed');
+    console.log("this.annotations BEFORE: ", this.annotations)
+    this.annotations = this.annotations.filter(e => e.value !== '50daysLow')
+    console.log("this.annotations AFTER: ", this.annotations)
+  }
+
+  let aRawValue = iStockInfo["data"][0]["fiftyTwoWeekLowChangePercent"] * 100
+  if (aRawValue < 10) {
+    console.log("We are close to 52W low.");
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log('52weeksLow warning already there. Nothing to do');
+    }
+    else {
+      console.log('52weeksLow warning do not exists. creating it');
+      let aNewAnotation = { key: "warning", value: "52weeksLow" }
+      this.annotations.push(aNewAnotation)
+    }
+
+
+  }
+  else {
+    //need to remove it if we are not anymore close to 52W low
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log("We are not close to 52W low. need to remove it");
+      console.log("this.annotations BEFORE: ", this.annotations)
+      this.annotations = this.annotations.filter(e => e.value !== '52weeksLow')
+      console.log("this.annotations AFTER: ", this.annotations)
+    }
+
+  }
+
+  aRawValue = iStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
+  if (aRawValue < -10) {
+    console.log("We are below -10% compare to 200d avg.");
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log('Warning already there. Nothing to do');
+    }
+    else {
+      console.log('200daysLow Warning do not exists. creating it');
+      let aNewAnotation = { key: "warning", value: "200daysLow" }
+      this.annotations.push(aNewAnotation)
+    }
+
+
+  }
+  else {
+    //need to remove it if we are not anymore close to 200 days low
+    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
+    if (aFiftyDayAverageChangePercentAnnotation) {
+      console.log("We are not close to -10% compare to 200d avg. need to remove it");
+      console.log("this.annotations BEFORE: ", this.annotations)
+      this.annotations = this.annotations.filter(e => e.value !== '200daysLow')
+      console.log("this.annotations AFTER: ", this.annotations)
+    }
+
+  }
+}
+
+AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
+  console.log("Refreshing annotation for Option");
+  console.log("iOptionInfo:", iOptionInfo);
 
   //clean up
   // const aOldWarning = this.annotations.find(({ value }) => value === 'FiftyDayAverageChangePercentWarning');
@@ -105,62 +180,33 @@ AssetSchema.methods.refreshAnnotations = function (iCompanyInfo, iStockInfo) {
   //     console.log("this.annotations AFTER: ",this.annotations)
   //   }
 
-  let aRawValue = iStockInfo["data"][0]["fiftyTwoWeekLowChangePercent"] * 100
-  if (aRawValue < 10) {
 
-    //console.log("We are close to 52W low. Adding annotation");
-    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '50daysLow');
-    if (aFiftyDayAverageChangePercentAnnotation) {
-      //console.log('Warning already there. Nothing to do');
-    }
-    else {
-      //console.log('aTickerAnnotation do not exists. creating it');
-      let aNewAnotation = { key: "warning", value: "50daysLow" }
-      this.annotations.push(aNewAnotation)
-    }
-
-
+  const aRawValue = iOptionInfo["inTheMoney"]
+  //console.log("We are below -10% compare to 200d avg. Adding annotation");
+  const aMoneynessAnnotation = this.annotations.find(({ key }) => key === 'moneyness');
+  if (aMoneynessAnnotation) {
+    console.log('aMoneynessAnnotation already there. Updating it');
+    aMoneynessAnnotation.value = aRawValue
   }
-  else
-  {
-    //need to remove it if we are not anymore close to 50 days low
-    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '50daysLow');
-    if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log("We are not close to 52W low. need to remove it");
-      console.log("this.annotations BEFORE: ",this.annotations)
-      this.annotations = this.annotations.filter(e => e.key !== '50daysLow')
-      console.log("this.annotations AFTER: ",this.annotations)
-    }
-    
+  else {
+    console.log('aMoneynessAnnotation do not exists. creating it');
+    let aNewAnotation = { key: "moneyness", value: aRawValue }
+    this.annotations.push(aNewAnotation)
   }
-
-  aRawValue = iStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
-  if (aRawValue < -10) {
-
-    //console.log("We are below -10% compare to 200d avg. Adding annotation");
-    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
-    if (aFiftyDayAverageChangePercentAnnotation) {
-      //console.log('Warning already there. Nothing to do');
-    }
-    else {
-      //console.log('aTickerAnnotation do not exists. creating it');
-      let aNewAnotation = { key: "warning", value: "200daysLow" }
-      this.annotations.push(aNewAnotation)
-    }
-
-
+  //also store it in warning
+  //first clean previous info
+  this.annotations = this.annotations.filter(e => e.value !== 'ITM')
+  this.annotations = this.annotations.filter(e => e.value !== 'OTM')
+  //now store updated info
+  if(aRawValue ===true){
+    console.log('Adding option ITM in good warning');
+    let aNewAnotation = { key: "goodWarning", value: "ITM" }
+    this.annotations.push(aNewAnotation)
   }
-  else
-  {
-    //need to remove it if we are not anymore close to 50 days low
-    const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
-    if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log("We are not close to -10% compare to 200d avg. need to remove it");
-      console.log("this.annotations BEFORE: ",this.annotations)
-      this.annotations = this.annotations.filter(e => e.key !== '200daysLow')
-      console.log("this.annotations AFTER: ",this.annotations)
-    }
-    
+  else{
+    console.log('Adding option OTM in bad warning');
+    let aNewAnotation = { key: "warning", value: "OTM" }
+    this.annotations.push(aNewAnotation)
   }
 }
 
@@ -249,7 +295,7 @@ AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
           let aNewAnotation = { key: "yield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
           this.annotations.push(aNewAnotation)
         }
-        this.refreshAnnotations(aCompanyInfo, aStockInfo)
+        this.refreshAnnotationsStocks(aCompanyInfo, aStockInfo)
 
 
         //console.log('Saving');
@@ -360,6 +406,7 @@ AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
           //console.log('Updating name too');
           //this.name = data["companyName"]
         }
+        this.refreshAnnotationsOptions(aMyOption)
         //console.log('Saving');
         const aCurrentDate = new Date().toISOString()
         //console.log('aCurrentDate:',aCurrentDate);

@@ -10,9 +10,7 @@ function ContainedInputs() {
     initialValues: {
         name: 'abc',
         annotation: 'key1:value1;key2:value2...',
-        assetType: 'stock',
-        unitValue: 5,
-        labels:"toto;titi",
+        asset:"50713a3c-ae27-427a-b3b5-214a617a3d39",
         portfolio: "50713a3c-ae27-427a-b3b5-214a617a3d39"
     },
   });
@@ -37,7 +35,7 @@ function ContainedInputs() {
     //now work on labels
     let aSplitedLabels=ivalues.labels.split(";")
     console.log('aSplitedLabels: ',aSplitedLabels);
-    let holding2Add = {name: ivalues.name, annotations: annotationsObj,assetType: ivalues.assetType,portfolio: ivalues.portfolio, labels: [aSplitedLabels[0],aSplitedLabels[1]]}
+    let holding2Add = {name: ivalues.name, annotations: annotationsObj,asset: ivalues.asset,portfolio: ivalues.portfolio}
     let test=JSON.stringify(holding2Add)
     console.log('test: ',test);
     const res = await fetch(
@@ -71,13 +69,6 @@ function ContainedInputs() {
 
 <TextInput
           required
-          label="assetType"
-          placeholder="stock"
-          {...form.getInputProps('assetType')}
-        />
-
-<TextInput
-          required
           label="portfolio"
           placeholder="50713a3c-ae27-427a-b3b5-214a617a3d39"
           {...form.getInputProps('portfolio')}
@@ -92,9 +83,9 @@ function ContainedInputs() {
 
 <TextInput
           required
-          label="labels"
-          placeholder="label1;label2"
-          {...form.getInputProps('labels')}
+          label="asset"
+          placeholder="50713a3c-ae27-427a-b3b5-214a617a3d39"
+          {...form.getInputProps('asset')}
         />
 
         <Group position="right" >

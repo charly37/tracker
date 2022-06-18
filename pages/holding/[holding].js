@@ -13,21 +13,15 @@ export function TableScrollArea2() {
       "uniqueIdentification": "DIS",
       "assetType": "stock",
       "unitValue": 20000,
+      "asset":[{"unitValue": 20000}],
       "targetAllocation": 1,
       "holdings": [],
+      "trxs": [],
       "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
       "portfolio": "50713a3c-ae27-427a-b3b5-214a617a3d39",
       "valueByProviders": { a: 1, b: 2 }
     })
-  const [holdings, setHoldings] = useState(
-    [
-      {
-        "name": "Disney",
-        "uniqueIdentification": "DIS",
-        "assetType": "stock",
-        "targetAllocation": 1
-      },
-    ])
+
 
   function getHolding(iHoldingId) {
     //console.log("Entering GetHolding");
@@ -37,30 +31,14 @@ export function TableScrollArea2() {
       .catch(error => {
         console.error('There was an error to get holdings!', error);
       });
-  };
-
-  function getHoldingsInfo() {
-    return fetch("http://localhost:3000/api/holdings")
-      .then((response) => response.json())
-      .catch(error => {
-        console.error('There was an error to get holdings!', error);
-      });
-  };
-
-  function getTransactions() {
-    return fetch('http://localhost:3000/api/transactions')
-      .then((res) => res.json())
-      .catch(error => {
-        console.error('There was an error to get transactions!', error);
-      });
-  };
+  }
 
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getHoldingsAndTransactions(iHolding) {
     //console.log("building promise with holding: ", iHolding);
     //
-    return Promise.all([getTransactions(), getHolding(iHolding)])
+    return Promise.all([getHolding(iHolding)])
   }
 
   function consolidateInfo(iHolding) {
@@ -72,7 +50,7 @@ export function TableScrollArea2() {
   function loadData(iHolding) {
     //console.log("entering loadData with holding: ", iHolding);
     getHoldingsAndTransactions(iHolding)
-      .then(([aTransactions, aHolding]) => {
+      .then(([aHolding]) => {
         let aTrxByProviders = {}
         // both have loaded!
         //console.log("both have loaded");
@@ -80,8 +58,9 @@ export function TableScrollArea2() {
         //console.log(aTransactions.data);
         setLoading(false)
         let aHoldingInDb = aHolding["data"][0]
-        //console.log("aHoldingInDb: ",aHoldingInDb);
-        aTransactions.data.forEach(aOneTransaction => {
+        console.log("aHoldingInDb: ",aHoldingInDb);
+        console.log("aHolding: ",aHolding);
+        aHoldingInDb.trxs.forEach(aOneTransaction => {
           //console.log("aOneTransaction: ",aOneTransaction);
           if (aOneTransaction.holdingInfo == aHoldingInDb.uniqueIdentification) {
             if (aHoldingInDb.holdings) {
@@ -102,7 +81,7 @@ export function TableScrollArea2() {
 
         });
         //do in another loop for future split in function
-        aTransactions.data.forEach(aOneTransaction => {
+        aHoldingInDb.trxs.forEach(aOneTransaction => {
           //console.log("aOneTransaction - loop2: ",aOneTransaction);
 
           if (aOneTransaction.holdingInfo == aHoldingInDb.uniqueIdentification) {
@@ -157,7 +136,7 @@ export function TableScrollArea2() {
   if (!holdingDetail) return <p>No profile data3</p>
 
   //console.log('fetching UI end');
-  //console.log("holdingDetail: ",holdingDetail);
+  console.log("holdingDetail: ",holdingDetail);
   //console.log("holdingDetail.targetAllocation: ",holdingDetail.targetAllocation);
   //console.log("holdingDetail.holdings: ",holdingDetail.holdings);
 
@@ -179,7 +158,7 @@ export function TableScrollArea2() {
     aTransactionsForTable = holdingDetail.holdings.map((aOneTrx) => (
       <tr key={aOneTrx.uniqueIdentification}>
         <td>
-          <Link href={"/holding/" + aOneTrx.uniqueIdentification}>
+          <Link href={"/transaction/" + aOneTrx.uniqueIdentification}>
             <a>{aOneTrx.uniqueIdentification}</a>
           </Link>
         </td>
@@ -202,8 +181,7 @@ export function TableScrollArea2() {
       Name: {holdingDetail.name}<br />
       uniqueIdentification: {holdingDetail.uniqueIdentification}<br />
       holdingType: {holdingDetail.assetType}<br />
-      unitValue: {holdingDetail.unitValue}<br />
-      targetAllocation: {holdingDetail.targetAllocation}<br />
+      unitValue: {holdingDetail.asset[0].unitValue}<br />
       portfolio: <Link href={"/portfolio/" + holdingDetail.portfolio}>
         <a>{holdingDetail.portfolio}</a>
       </Link>

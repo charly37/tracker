@@ -85,7 +85,6 @@ export function TableScrollArea2() {
 
         let aDiffTargetCurrent = Math.abs(aOneHolding.currentAllocation - aTargetAlloc)
         if (aDiffTargetCurrent > 0.20) {
-          aOneHolding.labels.push("FarFromTarget")
           let aWarningAlloc={key:"warning",value:"FarFromTarget"}
           aOneHolding.annotations.push(aWarningAlloc)
         }
@@ -203,7 +202,7 @@ export function TableScrollArea2() {
     if (aTargetAlloc == "yes") {
       //console.log("Target allocation is ON in this portfolio");
       let aHeader = [
-        <tr>
+        <tr key={"aa"}>
           <th>name</th>
           <th>myNotes</th>
           <th>assetType</th>
@@ -220,7 +219,7 @@ export function TableScrollArea2() {
     else {
       //console.log("No target allocation in this portfolio");
       let aHeader = [
-        <tr>
+        <tr key={"aa"}>
           <th>name</th>
           <th>myNotes</th>
           <th>assetType</th>
@@ -253,12 +252,19 @@ export function TableScrollArea2() {
       holdings.forEach(aOneHolding => {
         console.log("working on holding: ", aOneHolding);
         let aPossibleWarnings = aOneHolding.annotations.find(x => x.key === 'warning')
+        let aPossibleGoodWarnings = aOneHolding.annotations.find(x => x.key === 'goodWarning')
         let aAllPossibleWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'warning')
+        let aAllPossibleGoodWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'goodWarning')
         console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
         let aWarning = [];
+        let aGoodWarning = [];
         if (aPossibleWarnings){
           console.log("adding warning: ",aPossibleWarnings);
           aWarning.push(aPossibleWarnings.value)
+        }
+        if (aPossibleGoodWarnings){
+          console.log("adding good warning: ",aPossibleGoodWarnings);
+          aGoodWarning.push(aPossibleGoodWarnings.value)
         }
         if (aAllPossibleWarningsAssetLevel){
           aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
@@ -266,9 +272,20 @@ export function TableScrollArea2() {
           aWarning.push(aOneWarningFromAsset.value)
         });
         }
+        if (aAllPossibleGoodWarningsAssetLevel){
+          aAllPossibleGoodWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+          console.log("adding a good warning from asset: ",aOneWarningFromAsset);
+          aGoodWarning.push(aOneWarningFromAsset.value)
+        });
+        }
         //convert to html
         const aWarningsAsJavascript = aWarning.map((row) => (
-          <Badge color="red">
+          <Badge color="red" key={row}>
+            {row}
+          </Badge>
+        ));
+        const aGoodWarningAsJavascript = aGoodWarning.map((row) => (
+          <Badge color="green" key={row}>
             {row}
           </Badge>
         ));
@@ -287,8 +304,8 @@ export function TableScrollArea2() {
             </Link>
           </td>
           <td>{aOneHolding.annotations.find(x => x.key === 'myNotes').value}</td>
-          <td>{aOneHolding.assetType}</td>
-          <td>{aWarningsAsJavascript}</td>
+          <td>{aOneHolding.asset[0].assetType}</td>
+          <td>{aWarningsAsJavascript}{aGoodWarningAsJavascript}</td>
           {aTartgetAnnot}
           <td>{aOneHolding.currentAllocation}</td>
           <td>{aOneHolding.asset[0].unitValue}</td>
@@ -303,27 +320,6 @@ export function TableScrollArea2() {
   
       });
       return aRows2
-
-      // let aRows = holdings.map((row) => (
-      //   <tr key={row.name}>
-      //     <td>
-      //       <Link href={"/holding/" + row.uniqueIdentification}>
-      //         <a>{row.name}</a>
-      //       </Link>
-      //     </td>
-      //     <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
-      //     <td>{row.assetType}</td>
-      //     <td>{row.labels.join()}<Badge color="red">Badge</Badge></td>
-      //     <td>{row.annotations.find(x => x.key === 'TargetAllocation').value}</td>
-      //     <td>{row.currentAllocation}</td>
-      //     <td>{row.unitValue}</td>
-      //     <td>{row.totalValue}</td>
-      //   </tr>
-      // ));
-      // return aRows
-    
-
-
   }
 
   return (

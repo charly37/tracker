@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export function TableScrollArea() {
   const [isLoading, setLoading] = useState(false)
-  const [portfolios, setPortfolios] = useState(
+  const [providers, setProviders] = useState(
     [
       {
         "uniqueIdentification": "5145245",
@@ -16,11 +16,11 @@ export function TableScrollArea() {
       },
     ])
 
-  function getPortfolios() {
-    return fetch('http://localhost:3000/api/portfolios')
+  function getProviders() {
+    return fetch('http://localhost:3000/api/providers')
       .then((res) => res.json())
       .catch(error => {
-        console.error('There was an error to get portfolios!', error);
+        console.error('There was an error to get providers!', error);
       });
   };
 
@@ -29,19 +29,19 @@ export function TableScrollArea() {
   function getHoldingsAndTransactions() {
     console.log("building promise");
     //
-    return Promise.all([getPortfolios()])
+    return Promise.all([getProviders()])
   }
 
   // When this Promise resolves, both values will be available.
   function loadData() {
     getHoldingsAndTransactions()
-      .then(([aPortfolios]) => {
+      .then(([aProviders]) => {
         // both have loaded!
         //console.log("both have loaded");
-        //console.log(aPortfolios);
-        //console.log(aPortfolios.data);
+        console.log(aProviders);
+        //console.log(aProviders.data);
         setLoading(false)
-        setPortfolios(aPortfolios.data)
+        setProviders(aProviders.data)
       })
   }
 
@@ -53,25 +53,30 @@ export function TableScrollArea() {
   }, [])
 
   if (isLoading) return <p>Loading...</p>
-  if (!portfolios) return <p>No portfolio to display</p>
+  if (!providers) return <p>No provider to display</p>
 
-  const rows = portfolios.map((row) => (
+  const rows = providers.map((row) => (
     <tr key={row.name}>
       <td>
-        <Link href={"/portfolio/" + row.uniqueIdentification}>
+        <Link href={"/provider/" + row.uniqueIdentification}>
           <a>{row.name}</a>
         </Link>
       </td>
+      <td>{row.uniqueIdentification}</td>
       <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
     </tr>
   ));
 
   return (
     <div>
+            <Link href={"/addproviders"}>
+        <a>add an Provider</a>
+      </Link>
       <Table>
         <thead>
           <tr>
             <th>name</th>
+            <th>uniqueIdentification</th>
             <th>my Notes</th>
           </tr>
         </thead>
