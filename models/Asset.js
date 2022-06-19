@@ -16,7 +16,7 @@ const AssetSchema = new mongoose.Schema({
   }],
 })
 
-AssetSchema.methods.myvalidation = function (aRefreshNameToo = true) {
+AssetSchema.methods.myvalidation = function () {
   //console.log('Entering validation for : ', this.uniqueIdentification);
 
   //Mandatory annotation for notes for all asset type
@@ -100,7 +100,7 @@ function getCompanyAndStockInfo(iTicker) {
   return Promise.all([getCompanyInfo(iTicker), setStockInfo(iTicker)])
 }
 
-AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInfo) {
+AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInfo, iAvgYield) {
   console.log("Refreshing annotation");
 
   //clean up
@@ -165,6 +165,39 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     }
 
   }
+
+  const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
+  if (aYieldAnnotation) {
+    console.log('Looking to update yield good warning');
+    //this.annotations["yield"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+
+
+    if (aYieldAnnotation.value > iAvgYield) {
+      console.log("High yield.");
+      const aHighYieldAnnotation = this.annotations.find(({ value }) => value === 'HighYield');
+      if (aHighYieldAnnotation) {
+        console.log('Good warning already there. Nothing to do');
+      }
+      else {
+        console.log('Adding the good warning');
+        let aNewAnotation = { key: "goodWarning", value: "HighYield" }
+        this.annotations.push(aNewAnotation)
+      }
+
+
+    }
+    else {
+      //need to remove it if we are no longer high yield
+      const aHighYieldAnnotation = this.annotations.find(({ value }) => value === 'HighYield');
+      if (aHighYieldAnnotation) {
+        console.log("We are not high yield anymore. need to remove it");
+        console.log("this.annotations BEFORE: ", this.annotations)
+        this.annotations = this.annotations.filter(e => e.value !== 'HighYield')
+        console.log("this.annotations AFTER: ", this.annotations)
+      }
+
+    }
+  }
 }
 
 AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
@@ -198,12 +231,12 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
   this.annotations = this.annotations.filter(e => e.value !== 'ITM')
   this.annotations = this.annotations.filter(e => e.value !== 'OTM')
   //now store updated info
-  if(aRawValue ===true){
+  if (aRawValue === true) {
     console.log('Adding option ITM in good warning');
     let aNewAnotation = { key: "goodWarning", value: "ITM" }
     this.annotations.push(aNewAnotation)
   }
-  else{
+  else {
     console.log('Adding option OTM in bad warning');
     let aNewAnotation = { key: "warning", value: "OTM" }
     this.annotations.push(aNewAnotation)
@@ -211,7 +244,7 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
 }
 
 
-AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
+AssetSchema.methods.refresh = function (aAvgYield) {
   console.error('Entering refresh for : ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
   //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
@@ -278,10 +311,10 @@ AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
         //   let aNewAnotation = { key: "trailingAnnualDividendYield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
         //   this.annotations.push(aNewAnotation)
         // }
-        if (aRefreshNameToo) {
+        //if (aRefreshNameToo) {
           //console.log('Updating name too');
           //this.name = data["companyName"]
-        }
+        //}
 
         //company info
         aRawValue = aCompanyInfo["data"]["yield"]["raw"] * 100
@@ -295,7 +328,7 @@ AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
           let aNewAnotation = { key: "yield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
           this.annotations.push(aNewAnotation)
         }
-        this.refreshAnnotationsStocks(aCompanyInfo, aStockInfo)
+        this.refreshAnnotationsStocks(aCompanyInfo, aStockInfo, aAvgYield)
 
 
         //console.log('Saving');
@@ -402,10 +435,10 @@ AssetSchema.methods.refresh = function (aRefreshNameToo = false) {
         let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
         this.unitValue = aRoundedValue
         //console.log('this.unitValue: ',this.unitValue);
-        if (aRefreshNameToo) {
+        //if (aRefreshNameToo) {
           //console.log('Updating name too');
           //this.name = data["companyName"]
-        }
+        //}
         this.refreshAnnotationsOptions(aMyOption)
         //console.log('Saving');
         const aCurrentDate = new Date().toISOString()
