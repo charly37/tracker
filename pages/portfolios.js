@@ -17,7 +17,7 @@ export function TableScrollArea() {
     ])
 
   function getPortfolios() {
-    return fetch('http://localhost:3000/api/portfolios')
+    return fetch('/api/portfolios')
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get portfolios!', error);
