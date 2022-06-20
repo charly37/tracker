@@ -17,7 +17,7 @@ export function TableScrollArea() {
     ])
 
   function getProviders() {
-    return fetch('http://localhost:3000/api/providers')
+    return fetch('/api/providers')
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get providers!', error);

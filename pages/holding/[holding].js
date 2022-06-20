@@ -26,7 +26,7 @@ export function TableScrollArea2() {
   function getHolding(iHoldingId) {
     //console.log("Entering GetHolding");
     //console.log("iHoldingId: ",iHoldingId);
-    return fetch("http://localhost:3000/api/holdings?holding=" + iHoldingId)
+    return fetch("/api/holdings?holding=" + iHoldingId)
       .then((response) => response.json())
       .catch(error => {
         console.error('There was an error to get holdings!', error);

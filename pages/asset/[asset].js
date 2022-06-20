@@ -20,7 +20,7 @@ export function TableScrollArea2() {
   function getAsset(iAssetId) {
     //console.log("Entering GetAsset");
     //console.log("iAssetId: ",iAssetId);
-    return fetch("http://localhost:3000/api/assets?asset=" + iAssetId)
+    return fetch("/api/assets?asset=" + iAssetId)
       .then((response) => response.json())
       .catch(error => {
         console.error('There was an error to get assets!', error);
@@ -28,7 +28,7 @@ export function TableScrollArea2() {
   };
 
   function getTransactions() {
-    return fetch('http://localhost:3000/api/transactions')
+    return fetch('/api/transactions')
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get transactions!', error);

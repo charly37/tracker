@@ -18,7 +18,7 @@ export function TableScrollArea() {
     ])
 
   function getAssets() {
-    return fetch('http://localhost:3000/api/assets')
+    return fetch('/api/assets')
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get assets!', error);

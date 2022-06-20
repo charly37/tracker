@@ -24,7 +24,7 @@ export function TableScrollArea2() {
     function getTransaction(iTransactionId) {
         //console.log("Entering GetTransaction");
         //console.log("iTransactionId: ",iTransactionId);
-        return fetch("http://localhost:3000/api/transactions?transaction=" + iTransactionId)
+        return fetch("/api/transactions?transaction=" + iTransactionId)
             .then((response) => response.json())
             .catch(error => {
                 console.error('There was an error to get transactions!', error);

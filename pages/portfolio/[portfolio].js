@@ -32,7 +32,7 @@ export function TableScrollArea2() {
   function getPortfolio(iPortfolioId) {
     //console.log("Entering getPortfolio");
     //console.log("iPortfolioId: ", iPortfolioId);
-    return fetch('http://localhost:3000/api/portfolios?portfolio=' + iPortfolioId)
+    return fetch('/api/portfolios?portfolio=' + iPortfolioId)
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get transactions!', error);
@@ -40,7 +40,7 @@ export function TableScrollArea2() {
   };
 
   function getHoldings(iPortfolioId) {
-    return fetch("http://localhost:3000/api/holdings?portfolio=" + iPortfolioId)
+    return fetch("/api/holdings?portfolio=" + iPortfolioId)
       .then((response) => response.json())
       .catch(error => {
         console.error('There was an error to get holdings!', error);
@@ -48,7 +48,7 @@ export function TableScrollArea2() {
   };
 
   function getTransactions() {
-    return fetch('http://localhost:3000/api/transactions')
+    return fetch('/api/transactions')
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get transactions!', error);
