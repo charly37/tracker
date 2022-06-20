@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table } from '@mantine/core';
+import { Table, Button } from '@mantine/core';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 
@@ -13,7 +13,7 @@ export function TableScrollArea2() {
       "uniqueIdentification": "DIS",
       "assetType": "stock",
       "unitValue": 20000,
-      "asset":[{"unitValue": 20000}],
+      "asset": [{ "unitValue": 20000 }],
       "targetAllocation": 1,
       "holdings": [],
       "trxs": [],
@@ -190,9 +190,11 @@ export function TableScrollArea2() {
         <a>{holdingDetail.assetInfo}</a>
       </Link>
       <br />
-      <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
-        <a>Add Transaction</a>
-      </Link>
+      <Button >
+        <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
+          <a>Add Transaction</a>
+        </Link>
+      </Button>
       <br />
 
       annotations:

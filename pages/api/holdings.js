@@ -87,7 +87,7 @@ export default async function handler (req, res) {
         const id = randomUUID()
         //console.log('id',id);
         //Hardcode unit value since it is refresh by another script
-        const aNewHolding = new Holding({ uniqueIdentification: id, name: req.body["name"], assetType: req.body["assetType"], portfolio: req.body["portfolio"],unitValue: 5,labels: req.body["labels"]});
+        const aNewHolding = new Holding({ uniqueIdentification: id, name: req.body["name"], assetType: req.body["assetType"], assetInfo: req.body["asset"], portfolio: req.body["portfolio"],unitValue: 5,labels: req.body["labels"]});
         //console.log('aNewHolding: ',aNewHolding);
         let aAnnotations = req.body["annotations"]
         //console.log('aAnnotations: ',aAnnotations);
@@ -98,7 +98,8 @@ export default async function handler (req, res) {
         });
         //console.log('aAnnotations: ',aNewHolding);
         let aValidationResults = await aNewHolding.myvalidation()
-        //console.log('aValidationResults: ',aValidationResults);
+        console.log('aValidationResults: ',aValidationResults);
+        console.log('Saving: ',aNewHolding);
         await aNewHolding.save();
         res.status(201).json({ success: true, data: aNewHolding })
       } catch (error) {

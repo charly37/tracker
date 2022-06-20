@@ -1,0 +1,15 @@
+FROM node
+
+
+COPY . ./app/
+WORKDIR /app
+RUN rm yarn.lock
+RUN rm .env.local
+RUN pwd && ls -all
+RUN yarn install --frozen-lockfile
+RUN yarn build
+
+EXPOSE 3000
+
+
+CMD ["yarn", "start"]

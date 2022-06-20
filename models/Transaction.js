@@ -13,6 +13,7 @@ const TransactionSchema = new mongoose.Schema({
   },
   date: Date,
   quantity: Number,
+  paidByUnit: Number,
   uniqueIdentification: String
 })
 

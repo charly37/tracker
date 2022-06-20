@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table } from '@mantine/core';
+import { Table, Button } from '@mantine/core';
 //import useSWR from 'swr'
 import Link from 'next/link';
 
@@ -69,9 +69,11 @@ export function TableScrollArea() {
 
   return (
     <div>
-            <Link href={"/addassets"}>
-        <a>add an Asset</a>
-      </Link>
+      <Button >
+        <Link href={"/addassets"}>
+          <a>add an Asset</a>
+        </Link>
+      </Button>
       <Table>
         <thead>
           <tr>

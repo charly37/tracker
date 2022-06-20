@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router'
+import Link from 'next/link';
 
 /////////////////////////////////////// INTERFACE ///////////////////////////////////////
 
@@ -103,6 +104,11 @@ export function TableScrollArea2() {
       uniqueIdentification: {assetObj.uniqueIdentification}<br />
       assetType: {assetObj.assetType}<br />
       unitValue: {assetObj.unitValue}<br />
+      <br />
+
+      <Link href={"/addholdings?asset=" + assetObj.uniqueIdentification}>
+        <a>Instanciate as Holding in portfolio</a>
+      </Link>
       <br />
 
       annotations:

@@ -1,6 +1,7 @@
-import React from 'react';
-import { TextInput, Group, Checkbox, Button, Box} from '@mantine/core';
+import React, { useState, useEffect } from 'react';
+import { TextInput, Group, Button, Box} from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useRouter } from "next/router";
 
 
 function ContainedInputs() {
@@ -32,9 +33,6 @@ function ContainedInputs() {
     });
     console.log('annotationsObj: ',annotationsObj);
     
-    //now work on labels
-    let aSplitedLabels=ivalues.labels.split(";")
-    console.log('aSplitedLabels: ',aSplitedLabels);
     let holding2Add = {name: ivalues.name, annotations: annotationsObj,asset: ivalues.asset,portfolio: ivalues.portfolio}
     let test=JSON.stringify(holding2Add)
     console.log('test: ',test);
@@ -54,6 +52,28 @@ function ContainedInputs() {
 
 
 }
+
+const router = useRouter()
+  useEffect(() => {
+    //const router = useRouter()  //can not be call here - forbiden
+    if (!router.isReady) return;
+
+    console.log(router.query);
+
+    const params = router.query
+    console.log("router ready: ", params);
+    if (router.query['portfolio']) {
+      form.setFieldValue('portfolio', router.query['portfolio'])
+    }
+    if (router.query['asset']) {
+      form.setFieldValue('asset', router.query['asset'])
+    }
+    //setLoading(true)
+    //loadData(portfolio)
+
+  }, [router.isReady]) // added router.isReady after https://stackoverflow.com/questions/61040790/userouter-withrouter-receive-undefined-on-query-in-first-render It was empty before. just []
+
+
 
   return (
       

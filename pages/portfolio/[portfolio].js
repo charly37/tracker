@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Badge } from '@mantine/core';
+import { Table, Badge, Button } from '@mantine/core';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 
@@ -22,7 +22,7 @@ export function TableScrollArea2() {
         "uniqueIdentification": "DIS",
         "assetType": "stock",
         "labels": ["fun", "foun"],
-        "asset":[{"annotations": [{ "key": "clep1", "value": "valp1" }, { "key": "clep2", "value": "valp2" }]}],
+        "asset": [{ "annotations": [{ "key": "clep1", "value": "valp1" }, { "key": "clep2", "value": "valp2" }] }],
         "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
         "targetAllocation": 1
       },
@@ -85,7 +85,7 @@ export function TableScrollArea2() {
 
         let aDiffTargetCurrent = Math.abs(aOneHolding.currentAllocation - aTargetAlloc)
         if (aDiffTargetCurrent > 0.20) {
-          let aWarningAlloc={key:"warning",value:"FarFromTarget"}
+          let aWarningAlloc = { key: "warning", value: "FarFromTarget" }
           aOneHolding.annotations.push(aWarningAlloc)
         }
       }
@@ -248,56 +248,56 @@ export function TableScrollArea2() {
 
     //if (aTargetAlloc == "yes") {
 
-      let aRows2 = []
-      holdings.forEach(aOneHolding => {
-        //console.log("working on holding: ", aOneHolding);
-        let aPossibleWarnings = aOneHolding.annotations.find(x => x.key === 'warning')
-        let aPossibleGoodWarnings = aOneHolding.annotations.find(x => x.key === 'goodWarning')
-        let aAllPossibleWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'warning')
-        let aAllPossibleGoodWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'goodWarning')
-        //console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
-        let aWarning = [];
-        let aGoodWarning = [];
-        if (aPossibleWarnings){
-          //console.log("adding warning: ",aPossibleWarnings);
-          aWarning.push(aPossibleWarnings.value)
-        }
-        if (aPossibleGoodWarnings){
-          //console.log("adding good warning: ",aPossibleGoodWarnings);
-          aGoodWarning.push(aPossibleGoodWarnings.value)
-        }
-        if (aAllPossibleWarningsAssetLevel){
-          aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+    let aRows2 = []
+    holdings.forEach(aOneHolding => {
+      //console.log("working on holding: ", aOneHolding);
+      let aPossibleWarnings = aOneHolding.annotations.find(x => x.key === 'warning')
+      let aPossibleGoodWarnings = aOneHolding.annotations.find(x => x.key === 'goodWarning')
+      let aAllPossibleWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'warning')
+      let aAllPossibleGoodWarningsAssetLevel = aOneHolding.asset[0].annotations.filter(x => x.key === 'goodWarning')
+      //console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
+      let aWarning = [];
+      let aGoodWarning = [];
+      if (aPossibleWarnings) {
+        //console.log("adding warning: ",aPossibleWarnings);
+        aWarning.push(aPossibleWarnings.value)
+      }
+      if (aPossibleGoodWarnings) {
+        //console.log("adding good warning: ",aPossibleGoodWarnings);
+        aGoodWarning.push(aPossibleGoodWarnings.value)
+      }
+      if (aAllPossibleWarningsAssetLevel) {
+        aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
           //console.log("adding a warning from asset: ",aOneWarningFromAsset);
           aWarning.push(aOneWarningFromAsset.value)
         });
-        }
-        if (aAllPossibleGoodWarningsAssetLevel){
-          aAllPossibleGoodWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+      }
+      if (aAllPossibleGoodWarningsAssetLevel) {
+        aAllPossibleGoodWarningsAssetLevel.forEach(aOneWarningFromAsset => {
           //console.log("adding a good warning from asset: ",aOneWarningFromAsset);
           aGoodWarning.push(aOneWarningFromAsset.value)
         });
-        }
-        //convert to html
-        const aWarningsAsJavascript = aWarning.map((row) => (
-          <Badge color="red" key={row}>
-            {row}
-          </Badge>
-        ));
-        const aGoodWarningAsJavascript = aGoodWarning.map((row) => (
-          <Badge color="green" key={row}>
-            {row}
-          </Badge>
-        ));
+      }
+      //convert to html
+      const aWarningsAsJavascript = aWarning.map((row) => (
+        <Badge color="red" key={row}>
+          {row}
+        </Badge>
+      ));
+      const aGoodWarningAsJavascript = aGoodWarning.map((row) => (
+        <Badge color="green" key={row}>
+          {row}
+        </Badge>
+      ));
 
-        let aPossibleTargetAlloc = aOneHolding.annotations.find(x => x.key === 'TargetAllocation')
-        let aTartgetAnnot;
-        if (aPossibleTargetAlloc){
-          //console.log("adding target alloc");
-          aTartgetAnnot = <td>{aPossibleTargetAlloc.value}</td>
-        }
-        let aOneHoldingEntry = (
-          <tr key={aOneHolding.name}>
+      let aPossibleTargetAlloc = aOneHolding.annotations.find(x => x.key === 'TargetAllocation')
+      let aTartgetAnnot;
+      if (aPossibleTargetAlloc) {
+        //console.log("adding target alloc");
+        aTartgetAnnot = <td>{aPossibleTargetAlloc.value}</td>
+      }
+      let aOneHoldingEntry = (
+        <tr key={aOneHolding.name}>
           <td>
             <Link href={"/holding/" + aOneHolding.uniqueIdentification}>
               <a>{aOneHolding.name}</a>
@@ -311,15 +311,15 @@ export function TableScrollArea2() {
           <td>{aOneHolding.asset[0].unitValue}</td>
           <td>{aOneHolding.totalValue}</td>
         </tr>
-          );
-          
+      );
 
 
 
-        aRows2.push(aOneHoldingEntry)
-  
-      });
-      return aRows2
+
+      aRows2.push(aOneHoldingEntry)
+
+    });
+    return aRows2
   }
 
   return (
@@ -335,6 +335,13 @@ export function TableScrollArea2() {
       <ul>
         {aAnnotationsForPortfolio}
       </ul>
+      <br />
+
+      <Button >
+        <Link href={"/addholdings?portfolio=" + portfolioDetail.uniqueIdentification}>
+          <a>Add Holding</a>
+        </Link>
+      </Button>
       <br />
 
       Holdings(assets in portfolio):<br />

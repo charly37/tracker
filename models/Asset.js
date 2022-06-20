@@ -20,12 +20,12 @@ AssetSchema.methods.myvalidation = function () {
   //console.log('Entering validation for : ', this.uniqueIdentification);
 
   //Mandatory annotation for notes for all asset type
-  const aCheckAssetTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'MyNotes');
+  const aCheckAssetTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'myNotes');
   console.log(aCheckAssetTypeMandatoryAnnotation)
 
   if (!aCheckAssetTypeMandatoryAnnotation) {
-    console.error('Missing mandatory annotation for assetType');
-    throw 'Missing mandatory annotation for assetType'
+    console.error('Missing mandatory annotation MyNotes');
+    throw 'Missing mandatory annotation MyNotes'
   }
 
   if (this.assetType == "stock") {
@@ -41,20 +41,20 @@ AssetSchema.methods.myvalidation = function () {
 
     const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
     if (!aTickerAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory ticker annotation for option'
+      console.error('Missing mandatory annotation ticker');
+      throw 'Missing mandatory annotation ticker'
     }
 
     const aUtickerAnnotation = this.annotations.find(({ key }) => key === 'uticker');
     if (!aUtickerAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory uticker annotation for assetType'
+      console.error('Missing mandatory annotation uticker');
+      throw 'Missing mandatory annotation uticker'
     }
 
     const aExpirationAnnotation = this.annotations.find(({ key }) => key === 'expiration');
     if (!aExpirationAnnotation) {
-      console.error('Missing mandatory annotation for assetType');
-      throw 'Missing mandatory expiration annotation for assetType'
+      console.error('Missing mandatory annotation expiration');
+      throw 'Missing mandatory annotation expiration'
     }
 
     const aMoneynessAnnotation = this.annotations.find(({ key }) => key === 'moneyness');

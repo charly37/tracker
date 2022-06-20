@@ -22,7 +22,7 @@ HoldingSchema.methods.myvalidation = function (aRefreshNameToo = true) {
   //console.log('Entering validation for : ', this.uniqueIdentification);
 
   //Mandatory annotation for notes for all asset type
-  const aCheckHoldingTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'MyNotes');
+  const aCheckHoldingTypeMandatoryAnnotation = this.annotations.find(({ key }) => key === 'myNotes');
   console.log(aCheckHoldingTypeMandatoryAnnotation)
 
   if (!aCheckHoldingTypeMandatoryAnnotation) {

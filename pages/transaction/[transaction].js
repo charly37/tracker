@@ -14,6 +14,7 @@ export function TableScrollArea2() {
             "holdingInfo": "stock",
             "provider": 20000,
             "quantity": [],
+            "paidByUnit": 123.45,
             "date": [],
             "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
             "action": "50713a3c-ae27-427a-b3b5-214a617a3d39"
@@ -96,6 +97,7 @@ export function TableScrollArea2() {
             date: {transactionDetail.date}<br />
             quantity: {transactionDetail.quantity}<br />
             provider: {transactionDetail.provider}<br />
+            paidByUnit: {transactionDetail.paidByUnit}<br />
             action: {transactionDetail.action}<br />
             <br />
         </div>

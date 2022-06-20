@@ -32,7 +32,7 @@ function ContainedInputs() {
     });
     console.log('annotationsObj: ', annotationsObj);
 
-    let asset2Add = { name: ivalues.name, annotations: annotationsObj, asset: ivalues.assetType }
+    let asset2Add = { name: ivalues.name, annotations: annotationsObj, assetType: ivalues.assetType }
     let test = JSON.stringify(asset2Add)
     console.log('test: ', test);
     const res = await fetch(

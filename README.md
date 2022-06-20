@@ -35,3 +35,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ##
 Chart with yarn add react-chartjs-2 chart.js
+
+#Deploy
+good discussion in https://github.com/vercel/next.js/discussions/16995
+leading to a docker flow in https://github.com/vercel/next.js/tree/canary/examples/with-docker
