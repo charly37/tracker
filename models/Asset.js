@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import aConf from "../lib/myConfig.json";
 
 const AssetSchema = new mongoose.Schema({
   uniqueIdentification: String,
@@ -101,26 +102,26 @@ function getCompanyAndStockInfo(iTicker) {
 }
 
 AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInfo, iAvgYield) {
-  console.log("Refreshing annotation");
+  //console.log("Refreshing annotation");
 
   //clean up
   const aOldWarning = this.annotations.find(({ value }) => value === '50daysLow');
   if (aOldWarning) {
-    console.log('clean up needed');
-    console.log("this.annotations BEFORE: ", this.annotations)
+    //console.log('clean up needed');
+    //console.log("this.annotations BEFORE: ", this.annotations)
     this.annotations = this.annotations.filter(e => e.value !== '50daysLow')
-    console.log("this.annotations AFTER: ", this.annotations)
+    //console.log("this.annotations AFTER: ", this.annotations)
   }
 
   let aRawValue = iStockInfo["data"][0]["fiftyTwoWeekLowChangePercent"] * 100
   if (aRawValue < 10) {
-    console.log("We are close to 52W low.");
+    //console.log("We are close to 52W low.");
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log('52weeksLow warning already there. Nothing to do');
+      //console.log('52weeksLow warning already there. Nothing to do');
     }
     else {
-      console.log('52weeksLow warning do not exists. creating it');
+      //console.log('52weeksLow warning do not exists. creating it');
       let aNewAnotation = { key: "warning", value: "52weeksLow" }
       this.annotations.push(aNewAnotation)
     }
@@ -131,23 +132,23 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     //need to remove it if we are not anymore close to 52W low
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log("We are not close to 52W low. need to remove it");
-      console.log("this.annotations BEFORE: ", this.annotations)
+      //console.log("We are not close to 52W low. need to remove it");
+      //console.log("this.annotations BEFORE: ", this.annotations)
       this.annotations = this.annotations.filter(e => e.value !== '52weeksLow')
-      console.log("this.annotations AFTER: ", this.annotations)
+      //console.log("this.annotations AFTER: ", this.annotations)
     }
 
   }
 
   aRawValue = iStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
   if (aRawValue < -10) {
-    console.log("We are below -10% compare to 200d avg.");
+    //console.log("We are below -10% compare to 200d avg.");
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log('Warning already there. Nothing to do');
+      //console.log('Warning already there. Nothing to do');
     }
     else {
-      console.log('200daysLow Warning do not exists. creating it');
+      //console.log('200daysLow Warning do not exists. creating it');
       let aNewAnotation = { key: "warning", value: "200daysLow" }
       this.annotations.push(aNewAnotation)
     }
@@ -158,28 +159,28 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     //need to remove it if we are not anymore close to 200 days low
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log("We are not close to -10% compare to 200d avg. need to remove it");
-      console.log("this.annotations BEFORE: ", this.annotations)
+      //console.log("We are not close to -10% compare to 200d avg. need to remove it");
+      //console.log("this.annotations BEFORE: ", this.annotations)
       this.annotations = this.annotations.filter(e => e.value !== '200daysLow')
-      console.log("this.annotations AFTER: ", this.annotations)
+      //console.log("this.annotations AFTER: ", this.annotations)
     }
 
   }
 
   const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
   if (aYieldAnnotation) {
-    console.log('Looking to update yield good warning');
+    //console.log('Looking to update yield good warning');
     //this.annotations["yield"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
 
 
     if (aYieldAnnotation.value > iAvgYield) {
-      console.log("High yield.");
+      //console.log("High yield.");
       const aHighYieldAnnotation = this.annotations.find(({ value }) => value === 'HighYield');
       if (aHighYieldAnnotation) {
-        console.log('Good warning already there. Nothing to do');
+        //console.log('Good warning already there. Nothing to do');
       }
       else {
-        console.log('Adding the good warning');
+        //console.log('Adding the good warning');
         let aNewAnotation = { key: "goodWarning", value: "HighYield" }
         this.annotations.push(aNewAnotation)
       }
@@ -201,8 +202,8 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
 }
 
 AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
-  console.log("Refreshing annotation for Option");
-  console.log("iOptionInfo:", iOptionInfo);
+  //console.log("Refreshing annotation for Option");
+  //console.log("iOptionInfo:", iOptionInfo);
 
   //clean up
   // const aOldWarning = this.annotations.find(({ value }) => value === 'FiftyDayAverageChangePercentWarning');
@@ -218,11 +219,11 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
   //console.log("We are below -10% compare to 200d avg. Adding annotation");
   const aMoneynessAnnotation = this.annotations.find(({ key }) => key === 'moneyness');
   if (aMoneynessAnnotation) {
-    console.log('aMoneynessAnnotation already there. Updating it');
+    //console.log('aMoneynessAnnotation already there. Updating it');
     aMoneynessAnnotation.value = aRawValue
   }
   else {
-    console.log('aMoneynessAnnotation do not exists. creating it');
+    //console.log('aMoneynessAnnotation do not exists. creating it');
     let aNewAnotation = { key: "moneyness", value: aRawValue }
     this.annotations.push(aNewAnotation)
   }
@@ -232,12 +233,12 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
   this.annotations = this.annotations.filter(e => e.value !== 'OTM')
   //now store updated info
   if (aRawValue === true) {
-    console.log('Adding option ITM in good warning');
+    //console.log('Adding option ITM in good warning');
     let aNewAnotation = { key: "goodWarning", value: "ITM" }
     this.annotations.push(aNewAnotation)
   }
   else {
-    console.log('Adding option OTM in bad warning');
+    //console.log('Adding option OTM in bad warning');
     let aNewAnotation = { key: "warning", value: "OTM" }
     this.annotations.push(aNewAnotation)
   }
@@ -245,15 +246,15 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
 
 
 AssetSchema.methods.refresh = function (aAvgYield) {
-  console.error('Entering refresh for : ', this.name);
+  //console.error('Entering refresh for Asset: ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
   //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
   const aNow = new Date()
   //console.log('aNow: ',aNow);
   const aDelta = Math.abs(aNow - aPreviousRefreshDate) / 1000
   //console.log('aDelta:', aDelta);
-  if (aDelta < 3600) {
-    console.log('Refresh not needed');
+  if (aDelta < aConf.REFRESH_TIMER) {
+    //console.log('Refresh not needed for Asset');
     return
   }
   //console.error('Entering refresh for : ', this.uniqueIdentification);

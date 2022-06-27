@@ -58,7 +58,7 @@ export function TableScrollArea2() {
         //console.log(aTransactions.data);
         setLoading(false)
         let aHoldingInDb = aHolding["data"][0]
-        //console.log("aHoldingInDb: ",aHoldingInDb);
+        console.log("aHoldingInDb: ",aHoldingInDb);
         //console.log("aHolding: ",aHolding);
         aHoldingInDb.trxs.forEach(aOneTransaction => {
           //console.log("aOneTransaction: ",aOneTransaction);
@@ -66,16 +66,16 @@ export function TableScrollArea2() {
             if (aHoldingInDb.holdings) {
               aHoldingInDb.holdings.push(aOneTransaction)
               if (aOneTransaction.action == "buy") {
-                aHoldingInDb.totalValue = aHoldingInDb.totalValue + aOneTransaction.quantity * aHoldingInDb.unitValue
+                aHoldingInDb.totalValue = aHoldingInDb.totalValue + aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
               else {
-                aHoldingInDb.totalValue = aHoldingInDb.totalValue - aOneTransaction.quantity * aHoldingInDb.unitValue
+                aHoldingInDb.totalValue = aHoldingInDb.totalValue - aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
             }
             else {
               //should never be a sell. how can first action on an holding be a sell ?
               aHoldingInDb.holdings = [aOneTransaction]
-              aHoldingInDb.totalValue = aOneTransaction.quantity * aHoldingInDb.unitValue
+              aHoldingInDb.totalValue = aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
             }
           }
 
@@ -87,19 +87,19 @@ export function TableScrollArea2() {
           if (aOneTransaction.holdingInfo == aHoldingInDb.uniqueIdentification) {
             if (aOneTransaction.provider in aTrxByProviders) {
               if (aOneTransaction.action == "buy") {
-                aTrxByProviders[aOneTransaction.provider] = aTrxByProviders[aOneTransaction.provider] + aOneTransaction.quantity * aHoldingInDb.unitValue
+                aTrxByProviders[aOneTransaction.provider] = aTrxByProviders[aOneTransaction.provider] + aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
               else {
-                aTrxByProviders[aOneTransaction.provider] = aTrxByProviders[aOneTransaction.provider] - aOneTransaction.quantity * aHoldingInDb.unitValue
+                aTrxByProviders[aOneTransaction.provider] = aTrxByProviders[aOneTransaction.provider] - aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
             }
             else {
               //should never be a sell. how can first action on an holding be a sell ?
               if (aOneTransaction.action == "buy") {
-                aTrxByProviders[aOneTransaction.provider] = 0 + aOneTransaction.quantity * aHoldingInDb.unitValue
+                aTrxByProviders[aOneTransaction.provider] = 0 + aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
               else {
-                aTrxByProviders[aOneTransaction.provider] = 0 - aOneTransaction.quantity * aHoldingInDb.unitValue
+                aTrxByProviders[aOneTransaction.provider] = 0 - aOneTransaction.quantity * aHoldingInDb.asset[0].unitValue
               }
             }
           }
@@ -180,7 +180,6 @@ export function TableScrollArea2() {
     <div>
       Name: {holdingDetail.name}<br />
       uniqueIdentification: {holdingDetail.uniqueIdentification}<br />
-      holdingType: {holdingDetail.assetType}<br />
       unitValue: {holdingDetail.asset[0].unitValue}<br />
       portfolio: <Link href={"/portfolio/" + holdingDetail.portfolio}>
         <a>{holdingDetail.portfolio}</a>

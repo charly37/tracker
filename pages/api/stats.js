@@ -2,11 +2,33 @@
 
 import dbConnect from '../../lib/dbConnect'
 import Holding from '../../models/Holding'
+import Transaction from '../../models/Transaction'
 
 //https://stackoverflow.com/questions/71851190/how-to-generate-a-uuid-in-nextjs
 import { randomUUID } from 'crypto'
 
-export default async function handler (req, res) {
+function parser(aTrx){
+  console.log('aTrx: ', aTrx);
+  let aBoughtAmount=0.0
+  let aSellAmount=0.0
+  aTrx.forEach(aOneTransaction => {
+    console.log('aOneTransaction: ', aOneTransaction);
+    if(aOneTransaction.action==="buy"){
+      aBoughtAmount = aBoughtAmount + parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+      console.log('aBoughtAmount: ', aBoughtAmount);
+    }
+    else if(aOneTransaction.action==="sell"){
+      aSellAmount = aSellAmount + aOneTransaction.paidByUnit * parseFloat(aOneTransaction.quantity)
+    }
+    else{
+      console.log('unknow action for trx: ', aTrx);
+    }
+  });
+  console.log('aBoughtAmount: ', aBoughtAmount);
+  return [{"aBoughtAmount":aBoughtAmount,"aSellAmount":aSellAmount}]
+}
+
+async function handler(req, res) {
   const { method } = req
 
   await dbConnect()
@@ -14,51 +36,49 @@ export default async function handler (req, res) {
   switch (method) {
     case 'GET':
       try {
-        console.log('GET new Holding: ',req.query);
-        if (req.query.hasOwnProperty("holding")){
-          const aHoldingIdKey = req.query["holding"]
-          //console.log('specific holding specified: ',aHoldingIdKey);
-          const holdings = await Holding.find({uniqueIdentification : aHoldingIdKey})
-          res.status(200).json({ success: true, data: holdings })
-        }else if (req.query.hasOwnProperty("portfolio")){
-          const aPortfolioKey = req.query["portfolio"]
-          //console.log('specific portfolio specified: ',aPortfolioKey);
-          const holdings = await Holding.find({portfolio : aPortfolioKey})
-          const holdings2 = await Holding.aggregate([
-            {
-              $match: {
-                portfolio: aPortfolioKey,
-              },
-            },
-            {
-              $lookup: {
-                from: "transactions",
-                localField: "uniqueIdentification",
-                foreignField: "holdingInfo",
-                as: "trxs",
-              },
-            },
-          ])
+        //console.log('GET stats: ', req.query);
+        if (req.query.hasOwnProperty("boughtmonth")) {
+          const aHoldingIdKey = req.query["boughtmonth"]
+          console.log('bought last month: ');
+          const aNow = new Date()
+          console.log('aNow: ', aNow);
+          const aCurrentDate = new Date().toISOString()
+          console.log('aCurrentDate:', aCurrentDate);
+          const today = new Date()
+          const yesterday = new Date(today)
+          //better ?? d.setMonth(d.getMonth() - 3); ??
+          yesterday.setDate(yesterday.getDate() - 2)
+          console.log('yesterday:', yesterday);
+          //today data are $$ and require paying plan
+          let aTodayIso = yesterday.toISOString();
+
+          aTodayIso = aTodayIso.substring(0, aTodayIso.indexOf('T'));
+          console.log('aTodayIso:', aTodayIso);
+          const holdings2 = await Transaction.find(
+            { date: { $gt: yesterday } }
+          )
           //console.log('holdings: ',holdings);
           //console.log('holdings2: ',holdings2);
-          res.status(200).json({ success: true, data: holdings2 })
-        }else{
+          const aAnalysis=parser(holdings2)
+          res.status(200).json({ success: true, data: aAnalysis })
+        } else if (req.query.hasOwnProperty("portfolios")){
           const holdings = await Holding.find({})
-        res.status(200).json({ success: true, data: holdings })
+          res.status(200).json({ success: true, data: holdings })
         }
       } catch (error) {
+        console.error('Catching error: ', error);
         res.status(400).json({ success: false })
       }
       break
     case 'POST':
       try {
-        console.log('POST new holding: ',req.body);
+        console.log('POST new holding: ', req.body);
         //const user = await User.create(req.body)
         //res.status(201).json({ success: true, data: user })
         const id = randomUUID()
         //console.log('id',id);
         //Hardcode unit value since it is refresh by another script
-        const aNewHolding = new Holding({ uniqueIdentification: id, name: req.body["name"], assetType: req.body["assetType"], portfolio: req.body["portfolio"],unitValue: 5,labels: req.body["labels"]});
+        const aNewHolding = new Holding({ uniqueIdentification: id, name: req.body["name"], assetType: req.body["assetType"], portfolio: req.body["portfolio"], unitValue: 5, labels: req.body["labels"] });
         //console.log('aNewHolding: ',aNewHolding);
         let aAnnotations = req.body["annotations"]
         //console.log('aAnnotations: ',aAnnotations);
@@ -73,8 +93,8 @@ export default async function handler (req, res) {
         await aNewHolding.save();
         res.status(201).json({ success: true, data: aNewHolding })
       } catch (error) {
-        console.log('error: ',error);
-        res.status(400).json({ success: false ,errorDetails: error})
+        console.log('error: ', error);
+        res.status(400).json({ success: false, errorDetails: error })
       }
       break
     default:
@@ -82,3 +102,5 @@ export default async function handler (req, res) {
       break
   }
 }
+
+export default handler;

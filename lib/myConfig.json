@@ -1,0 +1,7 @@
+{
+    "REFRESH_TIMER": 1800,
+    "THEME_COLORS": {
+      "PRIMARY": "#007bff",
+      "SECONDARY": "#fc3"
+    }
+  }

@@ -98,6 +98,7 @@ export function TableScrollArea2() {
             quantity: {transactionDetail.quantity}<br />
             provider: {transactionDetail.provider}<br />
             paidByUnit: {transactionDetail.paidByUnit}<br />
+            gainCached: {transactionDetail.gainCached}<br />
             action: {transactionDetail.action}<br />
             <br />
         </div>
