@@ -180,29 +180,19 @@ export function TableScrollArea2() {
     <div>
       Name: {holdingDetail.name}<br />
       uniqueIdentification: {holdingDetail.uniqueIdentification}<br />
-      unitValue: {holdingDetail.asset[0].unitValue}<br />
       portfolio: <Link href={"/portfolio/" + holdingDetail.portfolio}>
         <a>{holdingDetail.portfolio}</a>
-      </Link>
-      <br />
+      </Link><br />
       asset: <Link href={"/asset/" + holdingDetail.assetInfo}>
         <a>{holdingDetail.assetInfo}</a>
-      </Link>
-      <br />
-      <Button >
-        <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
-          <a>Add Transaction</a>
-        </Link>
-      </Button>
-      <br />
-
+      </Link><br />
+      lastRefresh: {holdingDetail.lastRefresh}<br />
+      totalValue(compute client side): {holdingDetail.totalValue}<br />
+      totalValue(from cache value in DB): {holdingDetail.actualValueCached}<br />
       annotations:
       <ul>
         {aAnnotationsForHolding}
       </ul>
-      <br />
-
-      totalValue: {holdingDetail.totalValue}<br />
       <br />
       Values by providers:
       <ul>
@@ -211,6 +201,11 @@ export function TableScrollArea2() {
       <br />
       <br />
       Transactions: <br />
+      <Button >
+        <Link href={"/addtransaction?holdinginfo=" + holdingDetail.uniqueIdentification}>
+          <a>Add Transaction</a>
+        </Link>
+      </Button>
       <br />
 
       <Table>

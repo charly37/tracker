@@ -3,11 +3,17 @@ import Transaction from './Transaction'
 import Asset from './Asset'
 import aConf from "../lib/myConfig.json";
 
+//maybe use map ?? https://mongoosejs.com/docs/schematypes.html#maps
+
 const HoldingSchema = new mongoose.Schema({
   uniqueIdentification: String,
   name: String,
   actualValueCached: Number,
   lastRefresh: Date,
+  valueSplitProviderCached: [{
+    provider: String,
+    amount: Number
+  }],
   annotations: [{
     key: String,
     value: String
@@ -32,39 +38,49 @@ HoldingSchema.methods.myvalidation = function (aRefreshNameToo = true) {
   return
 }
 
-function getCompanyInfo(iTicker) {
-  let aCompanyInfoUrl = "https://mboum.com/api/v1/qu/quote/statistics/?symbol=" + iTicker
-  return fetch(aCompanyInfoUrl, {
-    "method": "GET",
-    "headers": { "X-Mboum-Secret": process.env.MBOUM_KEY }
-  })
-    .then((res) => res.json())
-    .catch(error => {
-      console.error('There was an error to get stock info!', error);
-    });
-};
+HoldingSchema.methods.getYield = async function () {
+  //console.log('Entering validation for : ', this.uniqueIdentification);
 
-function setStockInfo(iTicker) {
-  let aStockInfoUrl = "https://mboum.com/api/v1/qu/quote/?symbol=" + iTicker
-  return fetch(aStockInfoUrl, {
-    "method": "GET",
-    "headers": { "X-Mboum-Secret": process.env.MBOUM_KEY }
-  })
-    .then((res) => res.json())
-    .catch(error => {
-      console.error('There was an error to get stock info!', error);
-    });
-};
-
-// `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
-function getCompanyAndStockInfo(iTicker) {
-  //console.log("building promise with holding: ", iHolding);
-  return Promise.all([getCompanyInfo(iTicker), setStockInfo(iTicker)])
+  //Mandatory annotation for notes for all asset type
+  const aAsset = await Asset.find({ uniqueIdentification: this.assetInfo })
+  //console.log('aAsset: ',aAsset);
+  const aAssetYield = aAsset[0].getYield()
+  //console.log('aAssetYield: ',aAssetYield, ' and type: ',typeof(aAssetYield));
+  return aAssetYield
 }
 
+HoldingSchema.methods.refreshAnnotations = function (iAvgYield, iAsset) {
+  //Here we check if yield is high relative to the portfolio
+  if (iAsset.getYield() > iAvgYield) {
+    console.log('good yield compare to portfolio');
+    //console.log("We are below -10% compare to 200d avg.");
+    const aHighYieldPortAnnot = this.annotations.find(({ value }) => value === 'HighYieldP');
+    if (aHighYieldPortAnnot) {
+      //console.log('Warning already there. Nothing to do');
+    }
+    else {
+      //console.log('200daysLow Warning do not exists. creating it');
+      let aNewAnotation = { key: "goodWarning", value: "HighYieldP" }
+      this.annotations.push(aNewAnotation)
+    }
 
-HoldingSchema.methods.refresh = async function () {
-  //console.error('Entering holding refresh for : ', this);
+
+  }
+  else {
+    //need to remove it if we are not anymore close to 200 days low
+    const aHighYieldPortAnnot = this.annotations.find(({ value }) => value === 'HighYieldP');
+    if (aHighYieldPortAnnot) {
+      console.log("We are not higher than Portfolio yield. need to remove it");
+      //console.log("this.annotations BEFORE: ", this.annotations)
+      this.annotations = this.annotations.filter(e => e.value !== 'HighYieldP')
+      //console.log("this.annotations AFTER: ", this.annotations)
+    }
+
+  }
+}
+
+HoldingSchema.methods.refresh = async function (iAvgYield) {
+  console.error('Entering holding refresh for : ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
   //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
   const aNow = new Date()
@@ -75,23 +91,50 @@ HoldingSchema.methods.refresh = async function () {
     //console.log('Refresh not needed for holding');
     return
   }
+  //console.log('Refreshing holding : ', this.name);
   //call refresh on asset??
   let actualValue = 0
-  const aAsset = await Asset.find({uniqueIdentification:this.assetInfo})
+  const aAsset = await Asset.find({ uniqueIdentification: this.assetInfo })
   //console.log('aAsset: ',aAsset);
-  const aActualAssetPrice=aAsset[0].unitValue
+  //aAsset.refresh()
+  const aActualAssetPrice = aAsset[0].unitValue
 
   //call refresh on all Tx
-  const aMyHoldingId= this.uniqueIdentification
-  const transactions = await Transaction.find({holdingInfo:aMyHoldingId})
+  const aMyHoldingId = this.uniqueIdentification
+  const transactions = await Transaction.find({ holdingInfo: aMyHoldingId })
   transactions.forEach(aOneTrx => {
+    //console.log('actualValue: ',actualValue);
     //console.log('calling refresh for aOneTrx: ',aOneTrx);
+
     aOneTrx.refresh(aActualAssetPrice)
     //console.log('refresh aOneAsset: ',aRefreshStatus);
-    actualValue = actualValue +1
+    let aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
+    if (!aCheckHoldingTypeMandatoryAnnotation) {
+      console.log('New provider.');
+      let aNewProviderHoldings = { provider: aOneTrx.provider, amount: 0 }
+      this.valueSplitProviderCached.push(aNewProviderHoldings)
+    }
+    else {
+      //reset 0
+      aCheckHoldingTypeMandatoryAnnotation.amount = 0
+    }
+    //now it should ALWAYS exists
+    aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
+    if (aOneTrx.action == "buy") {
+      actualValue = aOneTrx.quantity * aActualAssetPrice + actualValue
+      aCheckHoldingTypeMandatoryAnnotation.amount = aOneTrx.quantity * aActualAssetPrice + aCheckHoldingTypeMandatoryAnnotation.amount
+    } else if (aOneTrx.action == "sell") {
+      actualValue = actualValue - aOneTrx.quantity * aActualAssetPrice
+    } else {
+      console.error('unknow operation for aOneTrx: ', aOneTrx);
+      aCheckHoldingTypeMandatoryAnnotation.amount = aCheckHoldingTypeMandatoryAnnotation.amount - aOneTrx.quantity * aActualAssetPrice
+    }
+
   });
 
-  this.actualValueCached=actualValue
+  this.actualValueCached = Math.round((actualValue + Number.EPSILON) * 100) / 100;
+
+  this.refreshAnnotations(iAvgYield, aAsset[0])
 
   //console.log('Saving');
   const aCurrentDate = new Date().toISOString()

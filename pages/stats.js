@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
@@ -7,11 +8,33 @@ import {Chart, Title, Legend, ArcElement} from 'chart.js'
 
 
 
-export default function Home() {
+export function Home() {
 
   Chart.register(ArcElement);
   Chart.register(Title);
   Chart.register(Legend);
+
+  const [isLoading, setLoading] = useState(false)
+  const [stats, setStats] = useState(
+    
+      {
+          "aBought": {
+            "amount": 1.84,
+            "holdings": {
+              "PNQI": 123.55,
+              "EFAV": 391.82,
+              "VGK230120P00054000": 410
+            }
+          },
+          "aSold": {
+            "amount": 1.12,
+            "holdings": {
+              "FXF": 1679.19,
+              "PSY": 109.78
+            }
+          }
+      }
+    )
 
 
 
@@ -40,9 +63,69 @@ export default function Home() {
     ]
   }
 
+  function getStats() {
+    return fetch('/api/stats?boughtmonth=5')
+      .then((res) => res.json())
+      .catch(error => {
+        console.error('There was an error to get portfolios!', error);
+      });
+  };
+
+  
+
+  // Request both students and scores in parallel and return a Promise for both values.
+  // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
+  function getData() {
+    //console.log("building promise");
+    return Promise.all([getStats()])
+  }
+
+    // When this Promise resolves, both values will be available.
+    function loadData() {
+      getData()
+        .then(([aStats]) => {
+          // both have loaded!
+          //console.log("both have loaded");
+          //console.log(aPortfolios);
+          console.log("stats in load: ",aStats);
+          setLoading(false)
+          setStats(aStats.data)
+          console.log('stats after load: ', stats);
+        })
+    }
+
+    //console.log('fetching UI start');
+    useEffect(() => {
+      //console.log("useEffect call");
+      setLoading(true)
+      loadData()
+    }, [])
+
+    if (isLoading) return <p>Loading...</p>
+    console.log('stats.aBought.holdings: ', stats.aBought.holdings);
+
+    // const aBuyDetail = stats.aBought.holdings.map((row) => (
+    //   <li key={row}>
+    //     {row}
+    //   </li>
+    // ));
+    //console.log('aBuyDetail: ', aBuyDetail);
+    // const aSoldDetail = stats.aSold.holdings.map((row) => (
+    //   <li key={row}>
+    //     {row}
+    //   </li>
+    // ));
+
 
   return (
+    <div>
         <div>
+          Amount bought: {stats.aBought.amount}<br />
+      <br />
+          Amount sold: {stats.aSold.amount}<br />
+      <br />
+          </div>
+          <div>
         <Pie
           data={state}
           options={{
@@ -70,5 +153,8 @@ export default function Home() {
           }}
         />
         </div>
+        </div>
   )
 }
+
+export default Home

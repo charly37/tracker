@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         else {
           const aTransactions = await Transaction.find({})
           //const tkkk = {"aa":"aa"}
-          console.log('Returning OK for transaction API');
+          //console.log('Returning OK for transaction API');
           res.status(200).json({ success: true, data: aTransactions })
         }
 

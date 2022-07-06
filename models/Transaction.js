@@ -20,6 +20,8 @@ const TransactionSchema = new mongoose.Schema({
   uniqueIdentification: String
 })
 
+
+
 TransactionSchema.methods.refresh = function (iActualPrice) {
   //console.log('Entering transaction refresh for : ', this, ' with price: ',iActualPrice);
   const aPreviousRefreshDate = this.lastRefresh
@@ -36,12 +38,12 @@ TransactionSchema.methods.refresh = function (iActualPrice) {
   
   //console.log('this.gainCached : ', this.gainCached);
   //if ("gainCached" in this){
-    if (this.gainCached !== undefined){
+    if (this.paidByUnit !== undefined){
     //console.log('gainCached is defined in Trx: ',this);
     this.gainCached =  Math.round(((iActualPrice - this.paidByUnit) + Number.EPSILON) * 100) / 100;
   }
   else{
-    console.error('gainCached is NOT defined in Trx: ',this);
+    console.error('paidByUnit is NOT defined in Trx: ',this);
   }
 
   //console.log('Saving');

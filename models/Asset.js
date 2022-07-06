@@ -132,7 +132,7 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     //need to remove it if we are not anymore close to 52W low
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      //console.log("We are not close to 52W low. need to remove it");
+      console.log("We are not close to 52W low. need to remove it");
       //console.log("this.annotations BEFORE: ", this.annotations)
       this.annotations = this.annotations.filter(e => e.value !== '52weeksLow')
       //console.log("this.annotations AFTER: ", this.annotations)
@@ -159,7 +159,7 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     //need to remove it if we are not anymore close to 200 days low
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '200daysLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      //console.log("We are not close to -10% compare to 200d avg. need to remove it");
+      console.log("We are not close to -10% compare to 200d avg. need to remove it");
       //console.log("this.annotations BEFORE: ", this.annotations)
       this.annotations = this.annotations.filter(e => e.value !== '200daysLow')
       //console.log("this.annotations AFTER: ", this.annotations)
@@ -199,6 +199,26 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
 
     }
   }
+}
+
+AssetSchema.methods.getYield = function () {
+  let aYield=0.0
+  const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
+  if (aYieldAnnotation) {
+    if (isNaN(aYieldAnnotation.value)) {
+      console.error("this asset as a yield which is not a number: ", this.name)
+    }
+    else if (typeof aYieldAnnotation.value === 'string'){
+      //console.error("this asset as a yield which is a string: ", this.name)
+      aYield = parseFloat(aYieldAnnotation.value)
+    }
+    else{
+      aYield = aYieldAnnotation.value
+    }
+    //console.error("It has annotation")
+  }
+  //console.error("aYield", aYield, ' and type: ',typeof(aYield))
+  return aYield
 }
 
 AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
@@ -253,7 +273,7 @@ AssetSchema.methods.refresh = function (aAvgYield) {
   //console.log('aNow: ',aNow);
   const aDelta = Math.abs(aNow - aPreviousRefreshDate) / 1000
   //console.log('aDelta:', aDelta);
-  if (aDelta < aConf.REFRESH_TIMER) {
+  if (aDelta < aConf.REFRESH_TIMER_EXT) {
     //console.log('Refresh not needed for Asset');
     return
   }
@@ -279,7 +299,7 @@ AssetSchema.methods.refresh = function (aAvgYield) {
         const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'fiftyDayAverageChangePercent');
         if (aFiftyDayAverageChangePercentAnnotation) {
           //console.log('aTickerAnnotation exists. updating it');
-          this.annotations["fiftyDayAverageChangePercent"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          aFiftyDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
         }
         else {
           //console.log('aTickerAnnotation do not exists. creating it');
@@ -292,7 +312,7 @@ AssetSchema.methods.refresh = function (aAvgYield) {
         const aTwoHundredDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'twoHundredDayAverageChangePercent');
         if (aTwoHundredDayAverageChangePercentAnnotation) {
           //console.log('aTickerAnnotation exists. updating it');
-          this.annotations["twoHundredDayAverageChangePercent"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          aTwoHundredDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
         }
         else {
           //console.log('aTickerAnnotation do not exists. creating it');
@@ -318,11 +338,17 @@ AssetSchema.methods.refresh = function (aAvgYield) {
         //}
 
         //company info
+        //Sometime it is missing
         aRawValue = aCompanyInfo["data"]["yield"]["raw"] * 100
+        //console.error("aRawValue: ", aRawValue)
+        if (isNaN(aRawValue)) {
+          console.error("this stock do not have yield info: ", this.name)
+          aRawValue=0.0
+        }
         const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
         if (aYieldAnnotation) {
           //console.log('aTickerAnnotation exists. updating it');
-          this.annotations["yield"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          aYieldAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
         }
         else {
           //console.log('aTickerAnnotation do not exists. creating it');

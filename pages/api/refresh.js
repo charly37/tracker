@@ -3,6 +3,7 @@
 import dbConnect from '../../lib/dbConnect'
 import Asset from '../../models/Asset'
 import Holding from '../../models/Holding'
+import Portfolio from '../../models/Portfolio'
 
 export default async function handler(req, res) {
   const { method } = req
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
       try {
         const assets = await Asset.find({})
         const aHoldings = await Holding.find({})
+        const aPortfolios = await Portfolio.find({})
         //VTI(USA stock AVG) yield for comparaison
         let aVtiYield = 1.0
         const aVtiAsset = await Asset.find({ uniqueIdentification: "6350538b-aaf2-40cf-9597-67b14cbdb023" })
@@ -31,9 +33,15 @@ export default async function handler(req, res) {
           aOneAsset.refresh(aVtiYield)
           //console.log('refresh aOneAsset: ',aRefreshStatus);
         });
-        aHoldings.forEach(aOneAsset => {
-          //console.log('refreshing aOneAsset: ',aOneAsset);
-          aOneAsset.refresh(aVtiYield)
+        //move into portfolio refresh
+        // aHoldings.forEach(aOneAsset => {
+        //   //console.log('refreshing aOneAsset: ',aOneAsset);
+        //   aOneAsset.refresh(aVtiYield)
+        //   //console.log('refresh aOneAsset: ',aRefreshStatus);
+        // });
+        aPortfolios.forEach(aPortfolio => {
+          //console.log('refreshing aPortfolio: ',aPortfolio);
+          aPortfolio.refresh()
           //console.log('refresh aOneAsset: ',aRefreshStatus);
         });
         res.status(200).json({ success: true })

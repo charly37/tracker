@@ -7,25 +7,109 @@ import Transaction from '../../models/Transaction'
 //https://stackoverflow.com/questions/71851190/how-to-generate-a-uuid-in-nextjs
 import { randomUUID } from 'crypto'
 
-function parser(aTrx){
+function parser(aTrx) {
   console.log('aTrx: ', aTrx);
-  let aBoughtAmount=0.0
-  let aSellAmount=0.0
+  let aBoughtAmount = 0.0
+  let aSellAmount = 0.0
   aTrx.forEach(aOneTransaction => {
     console.log('aOneTransaction: ', aOneTransaction);
-    if(aOneTransaction.action==="buy"){
+    if (aOneTransaction.action === "buy") {
       aBoughtAmount = aBoughtAmount + parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
       console.log('aBoughtAmount: ', aBoughtAmount);
     }
-    else if(aOneTransaction.action==="sell"){
+    else if (aOneTransaction.action === "sell") {
       aSellAmount = aSellAmount + aOneTransaction.paidByUnit * parseFloat(aOneTransaction.quantity)
     }
-    else{
+    else {
       console.log('unknow action for trx: ', aTrx);
     }
   });
   console.log('aBoughtAmount: ', aBoughtAmount);
-  return [{"aBoughtAmount":aBoughtAmount,"aSellAmount":aSellAmount}]
+  return [{ "aBoughtAmount": aBoughtAmount, "aSellAmount": aSellAmount }]
+}
+
+function parser2(aHoldings,iStartDate) {
+  //console.log('aHoldings: ', aHoldings);
+  let aStats = { aBought: { amount: 0, holdings: new Map() }, aSold: { amount: 0, holdings: new Map() } }
+  let aBoughtAmount = 0.0
+  let aSellAmount = 0.0
+  aHoldings.forEach(aOneHolding => {
+    //console.log('aOneHolding: ', aOneHolding);
+    aOneHolding.trxs.forEach(aOneTransaction => {
+      if(aOneTransaction.date>iStartDate){
+        if (aOneTransaction.action === "buy") {
+          aBoughtAmount = aBoughtAmount + parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          if(!aStats.aBought.holdings.has(aOneHolding.name)){
+            aStats.aBought.holdings.set(aOneHolding.name,0)
+          }
+          let aPreviousAmount = aStats.aBought.holdings.get(aOneHolding.name)
+          let aNewAmount = aPreviousAmount+ parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          aNewAmount = Math.round((aNewAmount + Number.EPSILON) * 100) / 100
+          aStats.aBought.holdings.set(aOneHolding.name,aNewAmount)
+          //console.log('aBoughtAmount: ', aBoughtAmount);
+        }
+        else if (aOneTransaction.action === "sell") {
+          aSellAmount = aSellAmount + aOneTransaction.paidByUnit * parseFloat(aOneTransaction.quantity)
+          if(!aStats.aSold.holdings.has(aOneHolding.name)){
+            aStats.aSold.holdings.set(aOneHolding.name,0)
+          }
+          let aPreviousAmount = aStats.aSold.holdings.get(aOneHolding.name)
+          let aNewAmount = aPreviousAmount+ parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          aNewAmount = Math.round((aNewAmount + Number.EPSILON) * 100) / 100
+          aStats.aSold.holdings.set(aOneHolding.name,aNewAmount)
+        }
+        else {
+          console.log('unknow action for trx: ', aTrx);
+        }
+      }
+      
+    });
+  });
+  console.log('aStats: ', aStats);
+  return aStats
+}
+
+function parser3(aHoldings,iStartDate) {
+  //console.log('aHoldings: ', aHoldings);
+  let aStats = { aBought: { amount: 0, holdings: {} }, aSold: { amount: 0, holdings: {} } }
+  let aBoughtAmount = 0.0
+  let aSellAmount = 0.0
+  aHoldings.forEach(aOneHolding => {
+    //console.log('aOneHolding: ', aOneHolding);
+    aOneHolding.trxs.forEach(aOneTransaction => {
+      if(aOneTransaction.date>iStartDate){
+        if (aOneTransaction.action === "buy") {
+          aStats.aBought.amount = aStats.aBought.amount + parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          aStats.aBought.amount = Math.round((aStats.aBought.amount + Number.EPSILON) * 100) / 100
+          if(!aStats.aBought.holdings.hasOwnProperty(aOneHolding.name)){
+            aStats.aBought.holdings[aOneHolding.name]=0
+          }
+          let aPreviousAmount = aStats.aBought.holdings[aOneHolding.name]
+          let aNewAmount = aPreviousAmount+ parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          aNewAmount = Math.round((aNewAmount + Number.EPSILON) * 100) / 100
+          aStats.aBought.holdings[aOneHolding.name]=aNewAmount
+          //console.log('aBoughtAmount: ', aBoughtAmount);
+        }
+        else if (aOneTransaction.action === "sell") {
+          aStats.aSold.amount = aStats.aSold.amount + aOneTransaction.paidByUnit * parseFloat(aOneTransaction.quantity)
+          aStats.aSold.amount= Math.round((aStats.aSold.amount + Number.EPSILON) * 100) / 100
+          if(!aStats.aSold.holdings.hasOwnProperty(aOneHolding.name)){
+            aStats.aSold.holdings[aOneHolding.name]=0
+          }
+          let aPreviousAmount = aStats.aSold.holdings[aOneHolding.name]
+          let aNewAmount = aPreviousAmount+ parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
+          aNewAmount = Math.round((aNewAmount + Number.EPSILON) * 100) / 100
+          aStats.aSold.holdings[aOneHolding.name]=aNewAmount
+        }
+        else {
+          console.log('unknow action for trx: ', aTrx);
+        }
+      }
+      
+    });
+  });
+  console.log('aStats: ', aStats);
+  return aStats
 }
 
 async function handler(req, res) {
@@ -47,7 +131,7 @@ async function handler(req, res) {
           const today = new Date()
           const yesterday = new Date(today)
           //better ?? d.setMonth(d.getMonth() - 3); ??
-          yesterday.setDate(yesterday.getDate() - 2)
+          yesterday.setDate(yesterday.getDate() - 30)
           console.log('yesterday:', yesterday);
           //today data are $$ and require paying plan
           let aTodayIso = yesterday.toISOString();
@@ -57,11 +141,50 @@ async function handler(req, res) {
           const holdings2 = await Transaction.find(
             { date: { $gt: yesterday } }
           )
+          //FILTER not allowed in atlas free - keep for reference
+          // const holdings3 = await Holding.aggregate([
+
+          //   {
+          //     $lookup: {
+          //       from: "transactions",
+          //       localField: "uniqueIdentification",
+          //       foreignField: "holdingInfo",
+          //       as: "trxs",
+          //     },
+          //   },
+          //   {
+          //     $filter: {
+          //       input: "$trxs", 
+          //       as: "trx", 
+          //       cond: { $gte: [ "$$trx.date", yesterday ] }
+          //     },
+          //   },
+
+          // ])
+          const holdings3 = await Holding.aggregate([
+            {
+              $lookup: {
+                from: "transactions",
+                localField: "uniqueIdentification",
+                foreignField: "holdingInfo",
+                as: "trxs",
+              },
+            },
+            {
+              $lookup: {
+                from: "assets",
+                localField: "assetInfo",
+                foreignField: "uniqueIdentification",
+                as: "asset",
+              },
+            },
+          ])
           //console.log('holdings: ',holdings);
-          //console.log('holdings2: ',holdings2);
-          const aAnalysis=parser(holdings2)
+          //console.log('holdings3: ', holdings3);
+          const aAnalysis = parser3(holdings3,yesterday)
+          console.log('aAnalysis: ', aAnalysis);
           res.status(200).json({ success: true, data: aAnalysis })
-        } else if (req.query.hasOwnProperty("portfolios")){
+        } else if (req.query.hasOwnProperty("portfolios")) {
           const holdings = await Holding.find({})
           res.status(200).json({ success: true, data: holdings })
         }

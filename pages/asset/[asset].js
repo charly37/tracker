@@ -27,19 +27,11 @@ export function TableScrollArea2() {
       });
   };
 
-  function getTransactions() {
-    return fetch('/api/transactions')
-      .then((res) => res.json())
-      .catch(error => {
-        console.error('There was an error to get transactions!', error);
-      });
-  };
-
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getAssetsAndTransactions(iAsset) {
     //console.log("building promise with asset: ", iAsset);
-    return Promise.all([getTransactions(), getAsset(iAsset)])
+    return Promise.all([getAsset(iAsset)])
   }
 
   function consolidateInfo(iAsset) {
@@ -51,7 +43,7 @@ export function TableScrollArea2() {
   function loadData(iAsset) {
     //console.log("entering loadData with asset: ", iAsset);
     getAssetsAndTransactions(iAsset)
-      .then(([aTransactions, aAsset]) => {
+      .then(([aAsset]) => {
         // both have loaded!
         //console.log("both have loaded");
         //console.log("aAsset: ", aAsset);
@@ -104,6 +96,7 @@ export function TableScrollArea2() {
       uniqueIdentification: {assetObj.uniqueIdentification}<br />
       assetType: {assetObj.assetType}<br />
       unitValue: {assetObj.unitValue}<br />
+      lastRefresh: {assetObj.lastRefresh}<br />
       <br />
 
       <Link href={"/addholdings?asset=" + assetObj.uniqueIdentification}>

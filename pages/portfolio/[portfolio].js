@@ -13,7 +13,7 @@ export function TableScrollArea2() {
       "uniqueIdentification": "1587458-95326658",
       "annotations": [{ "key": "clep1", "value": "valp1" }, { "key": "clep2", "value": "valp2" }],
       "holdings": [],
-      "totalValue": 500
+      "valueCached": 500
     })
   const [holdings, setHoldings] = useState(
     [
@@ -47,14 +47,6 @@ export function TableScrollArea2() {
       });
   };
 
-  function getTransactions() {
-    return fetch('/api/transactions')
-      .then((res) => res.json())
-      .catch(error => {
-        console.error('There was an error to get transactions!', error);
-      });
-  };
-
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getHoldingsAndPortfolio(iPortfolioId) {
@@ -63,20 +55,17 @@ export function TableScrollArea2() {
     return Promise.all([getPortfolio(iPortfolioId), getHoldings(iPortfolioId)])
   }
 
-  function consolidateInfo(iHoldings, iTotalValue, iPortfolioObj) {
+  function consolidateInfo(iHoldings, iPortfolioObj) {
     let aTotalCurrentAllocation = 0.0
     let aTotalTargetAllocation = 0.0
     //console.log("consolidateInfo with iTotalValue: ", iTotalValue);
     iHoldings.data.forEach(aOneHolding => {
       //console.log("working on holding: ", aOneHolding);
-      let aPerThousand = 100 * aOneHolding.totalValue / iTotalValue
+      let aPerThousand = 100 * aOneHolding.actualValueCached / iPortfolioObj.valueCached
       let aRoundedCurrentAllocation = Math.round((aPerThousand + Number.EPSILON) * 100) / 100;
       //console.log("aPerThousand: ",aRoundedCurrentAllocation);
       aOneHolding.currentAllocation = aRoundedCurrentAllocation
       aTotalCurrentAllocation = aTotalCurrentAllocation + aOneHolding.currentAllocation
-      //let s round total value here too
-      let aRoundedTotalValue = Math.round((aOneHolding.totalValue + Number.EPSILON) * 100) / 100;
-      aOneHolding.totalValue = aRoundedTotalValue
       let aTargetAllocAnnotationObj = aOneHolding.annotations.find(x => x.key === 'TargetAllocation')
       let aTargetAlloc = 0
       if (aTargetAllocAnnotationObj) {
@@ -108,52 +97,20 @@ export function TableScrollArea2() {
     //getHoldingsAndPortfolioAndTransactions(iPortfolioId)//transaction in holdings now
     getHoldingsAndPortfolio(iPortfolioId)
       .then(([aPortfolio, aHoldings, aTransactions]) => {
-        let aTotalValue = 0.0
 
         // both have loaded!
         //console.log("all data have loaded");
-        //console.log("aTransactions: ", aTransactions);
         //console.log("aHoldings: ", aHoldings);
         //console.log("aPortfolio: ", aPortfolio);
         let aPortfolioObj = aPortfolio.data[0]
         //console.log(aTransactions.data);
         setLoading(false)
-        aHoldings.data.forEach(aOneHolding => {
-          //console.log("Working on holding: ", aOneHolding);
-          aOneHolding.totalValue = 0.0
-          //aHoldingTransactions = 
-          aOneHolding.trxs.forEach(aOneTransaction => {
-            //console.log("Working on transaction: ", aOneTransaction);
-            //why put transaction again in holding object in holdings field ? it is historical....old code not redesign properly....that s all
-            //TODO clean the logic. only use aOneHolding.trxs and not aOneHolding.holdings
 
-            if (aOneHolding.holdings) {
-              aOneHolding.holdings.push(aOneTransaction)
-
-              if (aOneTransaction.action == "buy") {
-                aOneHolding.totalValue = aOneHolding.totalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-                aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-              }
-              else {
-                aOneHolding.totalValue = aOneHolding.totalValue - aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-                aTotalValue = aTotalValue - aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-              }
-            }
-            else {
-              //should never be a sell. how can first action on an holding be a sell ?
-              aOneHolding.holdings = [aOneTransaction]
-              aOneHolding.totalValue = aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-              aTotalValue = aTotalValue + aOneTransaction.quantity * aOneHolding.asset[0].unitValue
-            }
-          });
-
-        });
-        let aRoundedTotalValue = Math.round((aTotalValue + Number.EPSILON) * 100) / 100;
-        aPortfolioObj.totalValue = aRoundedTotalValue
-
-        consolidateInfo(aHoldings, aTotalValue, aPortfolioObj)
+        consolidateInfo(aHoldings, aPortfolioObj)
         setHoldings(aHoldings.data)
         setPortfolioDetail(aPortfolioObj)
+        console.log("aPortfolioObj: ",aPortfolioObj);
+        console.log("aHoldings.data: ",aHoldings.data);
       })
   }
 
@@ -309,14 +266,15 @@ export function TableScrollArea2() {
           {aTartgetAnnot}
           <td>{aOneHolding.currentAllocation}</td>
           <td>{aOneHolding.asset[0].unitValue}</td>
-          <td>{aOneHolding.totalValue}</td>
+          <td>{aOneHolding.actualValueCached}</td>
         </tr>
       );
 
+//if (aOneHolding.actualValueCached > 0){
+  aRows2.push(aOneHoldingEntry)
+//}
 
-
-
-      aRows2.push(aOneHoldingEntry)
+      
 
     });
     return aRows2
@@ -327,9 +285,10 @@ export function TableScrollArea2() {
     <div>
       Name: {portfolioDetail.name}<br />
       uniqueIdentification: {portfolioDetail.uniqueIdentification}<br />
-      totalValue: {portfolioDetail.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}<br />
+      valueCached: {portfolioDetail.valueCached.toLocaleString(undefined, { maximumFractionDigits: 2 })}<br />
       totalCurrentAllocation: {portfolioDetail.totalCurrentAllocation}<br />
       totalTargetAllocation: {portfolioDetail.totalTargetAllocation}<br />
+      avgYieldCached: {portfolioDetail.avgYieldCached}<br />
 
       annotations:
       <ul>
@@ -337,14 +296,15 @@ export function TableScrollArea2() {
       </ul>
       <br />
 
+      
+      <br />
+
+      Holdings(assets in portfolio):<br />
       <Button >
         <Link href={"/addholdings?portfolio=" + portfolioDetail.uniqueIdentification}>
           <a>Add Holding</a>
         </Link>
       </Button>
-      <br />
-
-      Holdings(assets in portfolio):<br />
       <br />
 
       <Table>

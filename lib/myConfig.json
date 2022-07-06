@@ -1,5 +1,6 @@
 {
-    "REFRESH_TIMER": 1800,
+    "REFRESH_TIMER": 600,
+    "REFRESH_TIMER_EXT": 43200,
     "THEME_COLORS": {
       "PRIMARY": "#007bff",
       "SECONDARY": "#fc3"
