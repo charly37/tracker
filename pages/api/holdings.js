@@ -71,6 +71,11 @@ export default async function handler (req, res) {
           //console.log('holdings: ',holdings);
           //console.log('holdings2: ',holdings2);
           res.status(200).json({ success: true, data: holdings2 })
+        }else if (req.query.hasOwnProperty("asset")){
+          const aAssetKey = req.query["asset"]
+          console.log('specific asset specified: ',aAssetKey);
+          const holdings = await Holding.find({assetInfo:aAssetKey})
+          res.status(200).json({ success: true, data: holdings })
         }else{
           const holdings = await Holding.find({})
         res.status(200).json({ success: true, data: holdings })

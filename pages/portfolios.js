@@ -12,6 +12,7 @@ export function TableScrollArea() {
       {
         "uniqueIdentification": "5145245",
         "name": "Long Term",
+        "valueCached": 50,
         "annotations": [{ "key": "myNotes", "value": "value1" }, { "key": "key2", "value": "value2" }]
       },
     ])
@@ -62,6 +63,7 @@ export function TableScrollArea() {
         </Link>
       </td>
       <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
+      <td>{row.valueCached}</td>
     </tr>
   ));
 
@@ -77,6 +79,7 @@ export function TableScrollArea() {
           <tr>
             <th>name</th>
             <th>my Notes</th>
+            <th>value</th>
           </tr>
         </thead>
         <tbody>{rows}</tbody>

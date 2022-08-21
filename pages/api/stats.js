@@ -72,8 +72,6 @@ function parser2(aHoldings,iStartDate) {
 function parser3(aHoldings,iStartDate) {
   //console.log('aHoldings: ', aHoldings);
   let aStats = { aBought: { amount: 0, holdings: {} }, aSold: { amount: 0, holdings: {} } }
-  let aBoughtAmount = 0.0
-  let aSellAmount = 0.0
   aHoldings.forEach(aOneHolding => {
     //console.log('aOneHolding: ', aOneHolding);
     aOneHolding.trxs.forEach(aOneTransaction => {
@@ -88,7 +86,6 @@ function parser3(aHoldings,iStartDate) {
           let aNewAmount = aPreviousAmount+ parseFloat(aOneTransaction.paidByUnit) * parseFloat(aOneTransaction.quantity)
           aNewAmount = Math.round((aNewAmount + Number.EPSILON) * 100) / 100
           aStats.aBought.holdings[aOneHolding.name]=aNewAmount
-          //console.log('aBoughtAmount: ', aBoughtAmount);
         }
         else if (aOneTransaction.action === "sell") {
           aStats.aSold.amount = aStats.aSold.amount + aOneTransaction.paidByUnit * parseFloat(aOneTransaction.quantity)
@@ -102,13 +99,13 @@ function parser3(aHoldings,iStartDate) {
           aStats.aSold.holdings[aOneHolding.name]=aNewAmount
         }
         else {
-          console.log('unknow action for trx: ', aTrx);
+          console.error('unknow action for trx: ', aTrx);
         }
       }
       
     });
   });
-  console.log('aStats: ', aStats);
+  //console.log('aStats: ', aStats);
   return aStats
 }
 
@@ -121,26 +118,12 @@ async function handler(req, res) {
     case 'GET':
       try {
         //console.log('GET stats: ', req.query);
-        if (req.query.hasOwnProperty("boughtmonth")) {
-          const aHoldingIdKey = req.query["boughtmonth"]
-          console.log('bought last month: ');
-          const aNow = new Date()
-          console.log('aNow: ', aNow);
-          const aCurrentDate = new Date().toISOString()
-          console.log('aCurrentDate:', aCurrentDate);
-          const today = new Date()
-          const yesterday = new Date(today)
-          //better ?? d.setMonth(d.getMonth() - 3); ??
-          yesterday.setDate(yesterday.getDate() - 30)
-          console.log('yesterday:', yesterday);
-          //today data are $$ and require paying plan
-          let aTodayIso = yesterday.toISOString();
-
-          aTodayIso = aTodayIso.substring(0, aTodayIso.indexOf('T'));
-          console.log('aTodayIso:', aTodayIso);
-          const holdings2 = await Transaction.find(
-            { date: { $gt: yesterday } }
-          )
+        if (req.query.hasOwnProperty("boughtdate")) {
+          const aBegStatsDate = req.query["boughtdate"]
+          //console.log('bought since: ',aBegStatsDate);
+          const aReqDate = new Date(aBegStatsDate)
+          //console.log('aReqDate:', aReqDate);
+          
           //FILTER not allowed in atlas free - keep for reference
           // const holdings3 = await Holding.aggregate([
 
@@ -181,8 +164,8 @@ async function handler(req, res) {
           ])
           //console.log('holdings: ',holdings);
           //console.log('holdings3: ', holdings3);
-          const aAnalysis = parser3(holdings3,yesterday)
-          console.log('aAnalysis: ', aAnalysis);
+          const aAnalysis = parser3(holdings3,aReqDate)
+          //console.log('aAnalysis: ', aAnalysis);
           res.status(200).json({ success: true, data: aAnalysis })
         } else if (req.query.hasOwnProperty("portfolios")) {
           const holdings = await Holding.find({})

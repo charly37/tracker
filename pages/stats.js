@@ -5,6 +5,8 @@ import styles from '../styles/Home.module.css'
 import Link from 'next/link';
 import {Pie, Doughnut} from 'react-chartjs-2';
 import {Chart, Title, Legend, ArcElement} from 'chart.js'
+import { DatePicker } from '@mantine/dates';
+
 
 
 
@@ -15,6 +17,11 @@ export function Home() {
   Chart.register(Legend);
 
   const [isLoading, setLoading] = useState(false)
+  const today = new Date()
+  const yesterday = new Date(today)
+//better ?? d.setMonth(d.getMonth() - 3); ??
+yesterday.setDate(yesterday.getDate() - 30)
+  const [aDate, setDate] = useState(new Date(yesterday));
   const [stats, setStats] = useState(
     
       {
@@ -64,7 +71,11 @@ export function Home() {
   }
 
   function getStats() {
-    return fetch('/api/stats?boughtmonth=5')
+
+    console.log('addTransactions with aDate: ', aDate.toISOString());
+    let uri = '/api/stats?boughtdate=' + aDate.toISOString()
+    let encoded = encodeURI(uri);
+    return fetch(encoded)
       .then((res) => res.json())
       .catch(error => {
         console.error('There was an error to get portfolios!', error);
@@ -76,7 +87,7 @@ export function Home() {
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getData() {
-    //console.log("building promise");
+    console.log("building promise");
     return Promise.all([getStats()])
   }
 
@@ -96,10 +107,11 @@ export function Home() {
 
     //console.log('fetching UI start');
     useEffect(() => {
-      //console.log("useEffect call");
+      console.log("useEffect call. aDate:",aDate);
       setLoading(true)
+      //setDate(new Date(yesterday)
       loadData()
-    }, [])
+    }, [aDate])
 
     if (isLoading) return <p>Loading...</p>
     console.log('stats.aBought.holdings: ', stats.aBought.holdings);
@@ -120,6 +132,8 @@ export function Home() {
   return (
     <div>
         <div>
+        <DatePicker required placeholder="Pick date" label="date" value={aDate}
+            onChange={(v) => setDate(v)} />
           Amount bought: {stats.aBought.amount}<br />
       <br />
           Amount sold: {stats.aSold.amount}<br />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button } from '@mantine/core';
+import { Table, Button, Switch } from '@mantine/core';
 //import useSWR from 'swr'
 import Link from 'next/link';
 
@@ -16,6 +16,8 @@ export function TableScrollArea() {
         "annotations": [{ "key": "myNotes", "value": "value1" }, { "key": "key2", "value": "value2" }]
       },
     ])
+
+    const [checked, setChecked] = useState(false);
 
   function getAssets() {
     return fetch('/api/assets')
@@ -67,8 +69,64 @@ export function TableScrollArea() {
     </tr>
   ));
 
+  function aCreateRowsForHoldingsTable() {
+    //console.log("Entering aCreateRowsForHoldingsTable");
+
+    let aRows2 = []
+    assets.forEach(aOneAsset => {
+      //console.log("working on holding: ", aOneAsset);
+      let aPossibleGoodWarnings = aOneAsset.annotations.find(x => x.key === 'goodWarning')
+      let aAllPossibleWarningsAssetLevel = aOneAsset.annotations.filter(x => x.key === 'warning')
+      let aAllPossibleGoodWarningsAssetLevel = aOneAsset.annotations.filter(x => x.key === 'goodWarning')
+      //console.log("aAllPossibleWarningsAssetLevel: ",aAllPossibleWarningsAssetLevel);
+      let aWarning = [];
+      let aGoodWarning = [];
+      if (aPossibleGoodWarnings) {
+        //console.log("adding good warning: ",aPossibleGoodWarnings);
+        aGoodWarning.push(aPossibleGoodWarnings.value)
+      }
+      if (aAllPossibleWarningsAssetLevel) {
+        aAllPossibleWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+          //console.log("adding a warning from asset: ",aOneWarningFromAsset);
+          aWarning.push(aOneWarningFromAsset.value)
+        });
+      }
+      if (aAllPossibleGoodWarningsAssetLevel) {
+        aAllPossibleGoodWarningsAssetLevel.forEach(aOneWarningFromAsset => {
+          //console.log("adding a good warning from asset: ",aOneWarningFromAsset);
+          aGoodWarning.push(aOneWarningFromAsset.value)
+        });
+      }
+
+
+
+      let aOneAssetEntry = (
+        <tr key={aOneAsset.name}>
+          <td>
+            <Link href={"/asset/" + aOneAsset.uniqueIdentification}>
+              <a>{aOneAsset.name}</a>
+            </Link>
+          </td>
+          <td>{aOneAsset.assetType}</td>
+          <td>{aOneAsset.annotations.find(x => x.key === 'myNotes').value}</td>
+        </tr>
+      );
+
+if ((aOneAsset.assetType !== "option") || (checked)){
+  aRows2.push(aOneAssetEntry)
+}
+
+      
+
+    });
+    return aRows2
+  }
+
   return (
     <div>
+      <br />
+      <Switch checked={checked} label="show options" onChange={(event) => setChecked(event.currentTarget.checked)} />
+      <br />
       <Button >
         <Link href={"/addassets"}>
           <a>add an Asset</a>
@@ -82,7 +140,7 @@ export function TableScrollArea() {
             <th>my Notes</th>
           </tr>
         </thead>
-        <tbody>{rows}</tbody>
+        <tbody>{aCreateRowsForHoldingsTable()}</tbody>
       </Table>
     </div>
 

@@ -19,7 +19,8 @@ export function TableScrollArea2() {
       "trxs": [],
       "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
       "portfolio": "50713a3c-ae27-427a-b3b5-214a617a3d39",
-      "valueByProviders": { a: 1, b: 2 }
+      "valueByProviders": { a: 1, b: 2 },
+      "sharesSplitProviderCached": [{provider: 'TD', amount: 4, _id: '62ef8c36697d8f62abd77ddd'},{provider: 'RH', amount: 6, _id: '62ef8c36697d8f62abd77dde'}]
     })
 
 
@@ -136,7 +137,7 @@ export function TableScrollArea2() {
   if (!holdingDetail) return <p>No profile data3</p>
 
   //console.log('fetching UI end');
-  //console.log("holdingDetail: ",holdingDetail);
+  console.log("holdingDetail: ",holdingDetail);
   //console.log("holdingDetail.targetAllocation: ",holdingDetail.targetAllocation);
   //console.log("holdingDetail.holdings: ",holdingDetail.holdings);
 
@@ -151,6 +152,12 @@ export function TableScrollArea2() {
       {row[0]}: {row[1].toLocaleString(undefined, { maximumFractionDigits: 2 })}
     </li>
   ));
+
+   const aSharesByPRoviders = holdingDetail.sharesSplitProviderCached.map((row) => (
+     <li key={row["provider"]}>
+       {row["provider"]}: {row["amount"]}
+     </li>
+   ));
 
   let aTransactionsForTable = []
 
@@ -197,6 +204,10 @@ export function TableScrollArea2() {
       Values by providers:
       <ul>
         {aValueByPRoviders}
+      </ul>
+      Shares by providers:
+      <ul>
+      {aSharesByPRoviders}
       </ul>
       <br />
       <br />

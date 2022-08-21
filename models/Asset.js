@@ -60,7 +60,7 @@ AssetSchema.methods.myvalidation = function () {
 
     const aMoneynessAnnotation = this.annotations.find(({ key }) => key === 'moneyness');
     if (!aMoneynessAnnotation) {
-      console.warning('Missing optional annotation for aMoneynessAnnotation. Adding it');
+      console.log('Missing optional annotation for aMoneynessAnnotation. Adding it');
       let aMoneynessAnotation = { key: "moneyness", value: "unknow" }
       this.annotations.push(aMoneynessAnotation)
     }

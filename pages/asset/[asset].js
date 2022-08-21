@@ -17,6 +17,9 @@ export function TableScrollArea2() {
         "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
       })
 
+      const [holdInPort, setholdInPort] = useState(
+        [])
+
   function getAsset(iAssetId) {
     //console.log("Entering GetAsset");
     //console.log("iAssetId: ",iAssetId);
@@ -27,14 +30,23 @@ export function TableScrollArea2() {
       });
   };
 
+  function getHoldings(iAssetId) {
+    return fetch("/api/holdings?asset=" + iAssetId)
+      .then((res) => res.json())
+      .catch(error => {
+        console.error('There was an error to get assets!', error);
+      });
+  };
+
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getAssetsAndTransactions(iAsset) {
     //console.log("building promise with asset: ", iAsset);
-    return Promise.all([getAsset(iAsset)])
+    return Promise.all([getAsset(iAsset),getHoldings(iAsset)])
   }
 
-  function consolidateInfo(iAsset) {
+  function consolidateInfo(iAsset,iHoldings) {
+
     //console.log("consolidateInfo");
     return
   }
@@ -43,18 +55,20 @@ export function TableScrollArea2() {
   function loadData(iAsset) {
     //console.log("entering loadData with asset: ", iAsset);
     getAssetsAndTransactions(iAsset)
-      .then(([aAsset]) => {
+      .then(([aAsset,aHoldings]) => {
         // both have loaded!
-        //console.log("both have loaded");
+        console.log("both have loaded");
         //console.log("aAsset: ", aAsset);
         //console.log(aTransactions.data);
+        console.log(aHoldings.data);
         setLoading(false)
         let aAssetInDb = aAsset["data"][0]
         //console.log("aAssetInDb: ",aAssetInDb);
 
         //console.log("aTrxByProviders: ",aTrxByProviders);
-        consolidateInfo(aAssetInDb)
+        consolidateInfo(aAssetInDb,aHoldings)
         setAssetObj(aAssetInDb)
+        setholdInPort(aHoldings["data"])
       })
   }
   const router = useRouter()
@@ -87,6 +101,14 @@ export function TableScrollArea2() {
       {row.key}:{row.value}
     </li>
   ));
+  console.log("holdInPort: ",holdInPort);
+  const aHoldingInPortLinks = holdInPort.map((row) => (
+    <li key={row.portfolio}>
+      <Link href={"/holding/" + row.uniqueIdentification}>
+          <a>{row.uniqueIdentification}</a>
+        </Link>
+    </li>
+  ));
 
 
 
@@ -107,6 +129,10 @@ export function TableScrollArea2() {
       annotations:
       <ul>
         {aAnnotationsForAsset}
+      </ul>
+      holdings in portfolio:
+      <ul>
+        {aHoldingInPortLinks}
       </ul>
       <br />
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Badge, Button } from '@mantine/core';
+import { Table, Badge, Button, Switch  } from '@mantine/core';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 
@@ -27,6 +27,8 @@ export function TableScrollArea2() {
         "targetAllocation": 1
       },
     ])
+
+    const [checked, setChecked] = useState(false);
 
 
   function getPortfolio(iPortfolioId) {
@@ -270,9 +272,9 @@ export function TableScrollArea2() {
         </tr>
       );
 
-//if (aOneHolding.actualValueCached > 0){
+if ((aOneHolding.actualValueCached > 0) || (checked)){
   aRows2.push(aOneHoldingEntry)
-//}
+}
 
       
 
@@ -297,6 +299,8 @@ export function TableScrollArea2() {
       <br />
 
       
+      <br />
+      <Switch checked={checked} label="show 0 balance" onChange={(event) => setChecked(event.currentTarget.checked)} />
       <br />
 
       Holdings(assets in portfolio):<br />

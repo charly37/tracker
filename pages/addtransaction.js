@@ -21,7 +21,7 @@ function ContainedInputs() {
     },
   });
 
-  const [getDate, setDate] = useState();
+  const [getDate, setDate] = useState(new Date());
   const handleSubmit = (e) => {
     e.preventDefault();
     alert("Submitted!");

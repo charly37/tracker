@@ -14,6 +14,10 @@ const HoldingSchema = new mongoose.Schema({
     provider: String,
     amount: Number
   }],
+  sharesSplitProviderCached: [{
+    provider: String,
+    amount: Number
+  }],
   annotations: [{
     key: String,
     value: String
@@ -118,16 +122,29 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
       //reset 0
       aCheckHoldingTypeMandatoryAnnotation.amount = 0
     }
+    let aSharesForProvider = this.sharesSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
+    if (!aSharesForProvider) {
+      console.log('New provider.');
+      let aNewProviderHoldings = { provider: aOneTrx.provider, amount: 0 }
+      this.sharesSplitProviderCached.push(aNewProviderHoldings)
+    }
+    else {
+      //reset 0
+      aSharesForProvider.amount = 0
+    }
     //now it should ALWAYS exists
     aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
+    aSharesForProvider = this.sharesSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
     if (aOneTrx.action == "buy") {
       actualValue = aOneTrx.quantity * aActualAssetPrice + actualValue
       aCheckHoldingTypeMandatoryAnnotation.amount = aOneTrx.quantity * aActualAssetPrice + aCheckHoldingTypeMandatoryAnnotation.amount
+      aSharesForProvider.amount = aOneTrx.quantity + aSharesForProvider.amount
     } else if (aOneTrx.action == "sell") {
       actualValue = actualValue - aOneTrx.quantity * aActualAssetPrice
     } else {
       console.error('unknow operation for aOneTrx: ', aOneTrx);
       aCheckHoldingTypeMandatoryAnnotation.amount = aCheckHoldingTypeMandatoryAnnotation.amount - aOneTrx.quantity * aActualAssetPrice
+      aSharesForProvider.amount = aSharesForProvider.amount - aOneTrx.quantity
     }
 
   });
