@@ -20,7 +20,8 @@ export function TableScrollArea2() {
       "annotations": [{ "key": "TargetAllocation", "value": "1" }, { "key": "cleh2", "value": "valh2" }, { "key": "myNotes", "value": "text" }],
       "portfolio": "50713a3c-ae27-427a-b3b5-214a617a3d39",
       "valueByProviders": { a: 1, b: 2 },
-      "sharesSplitProviderCached": [{provider: 'TD', amount: 4, _id: '62ef8c36697d8f62abd77ddd'},{provider: 'RH', amount: 6, _id: '62ef8c36697d8f62abd77dde'}]
+      "valueSplitProviderCached": [{provider: 'TD',amount: 122.02},{provider: 'RH',amount: 366.06},{provider: 'Fid',amount: 366.06}],
+      "sharesSplitProviderCached": [{provider: 'TD', amount: 4},{provider: 'RH', amount: 6}]
     })
 
 
@@ -159,6 +160,12 @@ export function TableScrollArea2() {
      </li>
    ));
 
+   const aAmountByProviderCache = holdingDetail.valueSplitProviderCached.map((row) => (
+    <li key={row["provider"]}>
+      {row["provider"]}: {row["amount"]}
+    </li>
+  ));
+
   let aTransactionsForTable = []
 
   if (holdingDetail.holdings) {
@@ -195,15 +202,19 @@ export function TableScrollArea2() {
       </Link><br />
       lastRefresh: {holdingDetail.lastRefresh}<br />
       totalValue(compute client side): {holdingDetail.totalValue}<br />
-      totalValue(from cache value in DB): {holdingDetail.actualValueCached}<br />
+      totalValue(compute server side - from cache value in DB): {holdingDetail.actualValueCached}<br />
       annotations:
       <ul>
         {aAnnotationsForHolding}
       </ul>
       <br />
-      Values by providers:
+      Values by providers(client side - compute in browser):
       <ul>
         {aValueByPRoviders}
+      </ul>
+      Values by providers(server side - from DB):
+      <ul>
+        {aAmountByProviderCache}
       </ul>
       Shares by providers:
       <ul>

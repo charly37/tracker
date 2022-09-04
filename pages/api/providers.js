@@ -2,6 +2,7 @@
 
 import dbConnect from '../../lib/dbConnect'
 import Provider from '../../models/Provider'
+import providers from '../../wrap/providers'
 
 export default async function handler (req, res) {
   const { method } = req
@@ -11,9 +12,11 @@ export default async function handler (req, res) {
   switch (method) {
     case 'GET':
       try {
+        providers()
         const aProviders = await Provider.find({})
         res.status(200).json({ success: true, data: aProviders })
       } catch (error) {
+        console.log('error: ',error);
         res.status(400).json({ success: false })
       }
       break

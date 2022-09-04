@@ -56,7 +56,7 @@ HoldingSchema.methods.getYield = async function () {
 HoldingSchema.methods.refreshAnnotations = function (iAvgYield, iAsset) {
   //Here we check if yield is high relative to the portfolio
   if (iAsset.getYield() > iAvgYield) {
-    console.log('good yield compare to portfolio');
+    //console.log('good yield compare to portfolio');
     //console.log("We are below -10% compare to 200d avg.");
     const aHighYieldPortAnnot = this.annotations.find(({ value }) => value === 'HighYieldP');
     if (aHighYieldPortAnnot) {
@@ -84,7 +84,7 @@ HoldingSchema.methods.refreshAnnotations = function (iAvgYield, iAsset) {
 }
 
 HoldingSchema.methods.refresh = async function (iAvgYield) {
-  console.error('Entering holding refresh for : ', this.name);
+  //console.error('Entering holding refresh for : ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
   //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
   const aNow = new Date()
@@ -103,6 +103,9 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
   //aAsset.refresh()
   const aActualAssetPrice = aAsset[0].unitValue
 
+  //Clean up cache - otherwise you keep wrong/old provider forever in the list
+  this.valueSplitProviderCached=[]
+
   //call refresh on all Tx
   const aMyHoldingId = this.uniqueIdentification
   const transactions = await Transaction.find({ holdingInfo: aMyHoldingId })
@@ -120,7 +123,8 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
     }
     else {
       //reset 0
-      aCheckHoldingTypeMandatoryAnnotation.amount = 0
+      //why ??
+      //aCheckHoldingTypeMandatoryAnnotation.amount = 0
     }
     let aSharesForProvider = this.sharesSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
     if (!aSharesForProvider) {
@@ -130,7 +134,7 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
     }
     else {
       //reset 0
-      aSharesForProvider.amount = 0
+      //aSharesForProvider.amount = 0
     }
     //now it should ALWAYS exists
     aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
@@ -141,10 +145,10 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
       aSharesForProvider.amount = aOneTrx.quantity + aSharesForProvider.amount
     } else if (aOneTrx.action == "sell") {
       actualValue = actualValue - aOneTrx.quantity * aActualAssetPrice
+      aSharesForProvider.amount = aSharesForProvider.amount - aOneTrx.quantity
+      aCheckHoldingTypeMandatoryAnnotation.amount = aCheckHoldingTypeMandatoryAnnotation.amount - aOneTrx.quantity * aActualAssetPrice
     } else {
       console.error('unknow operation for aOneTrx: ', aOneTrx);
-      aCheckHoldingTypeMandatoryAnnotation.amount = aCheckHoldingTypeMandatoryAnnotation.amount - aOneTrx.quantity * aActualAssetPrice
-      aSharesForProvider.amount = aSharesForProvider.amount - aOneTrx.quantity
     }
 
   });

@@ -2,6 +2,7 @@
 
 import dbConnect from '../../lib/dbConnect'
 import Holding from '../../models/Holding'
+import holdings from '../../wrap/holdings'
 
 //https://stackoverflow.com/questions/71851190/how-to-generate-a-uuid-in-nextjs
 import { randomUUID } from 'crypto'
@@ -77,8 +78,11 @@ export default async function handler (req, res) {
           const holdings = await Holding.find({assetInfo:aAssetKey})
           res.status(200).json({ success: true, data: holdings })
         }else{
-          const holdings = await Holding.find({})
-        res.status(200).json({ success: true, data: holdings })
+          console.log('here1: ');
+          holdings()
+
+          const aHoldings = await Holding.find({})
+        res.status(200).json({ success: true, data: aHoldings })
         }
       } catch (error) {
         res.status(400).json({ success: false })

@@ -132,7 +132,7 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
     //need to remove it if we are not anymore close to 52W low
     const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ value }) => value === '52weeksLow');
     if (aFiftyDayAverageChangePercentAnnotation) {
-      console.log("We are not close to 52W low. need to remove it");
+      //console.log("We are not close to 52W low. need to remove it");
       //console.log("this.annotations BEFORE: ", this.annotations)
       this.annotations = this.annotations.filter(e => e.value !== '52weeksLow')
       //console.log("this.annotations AFTER: ", this.annotations)
@@ -202,17 +202,17 @@ AssetSchema.methods.refreshAnnotationsStocks = function (iCompanyInfo, iStockInf
 }
 
 AssetSchema.methods.getYield = function () {
-  let aYield=0.0
+  let aYield = 0.0
   const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
   if (aYieldAnnotation) {
     if (isNaN(aYieldAnnotation.value)) {
       console.error("this asset as a yield which is not a number: ", this.name)
     }
-    else if (typeof aYieldAnnotation.value === 'string'){
+    else if (typeof aYieldAnnotation.value === 'string') {
       //console.error("this asset as a yield which is a string: ", this.name)
       aYield = parseFloat(aYieldAnnotation.value)
     }
-    else{
+    else {
       aYield = aYieldAnnotation.value
     }
     //console.error("It has annotation")
@@ -266,224 +266,240 @@ AssetSchema.methods.refreshAnnotationsOptions = function (iOptionInfo) {
 
 
 AssetSchema.methods.refresh = function (aAvgYield) {
-  //console.error('Entering refresh for Asset: ', this.name);
-  const aPreviousRefreshDate = this.lastRefresh
-  //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
-  const aNow = new Date()
-  //console.log('aNow: ',aNow);
-  const aDelta = Math.abs(aNow - aPreviousRefreshDate) / 1000
-  //console.log('aDelta:', aDelta);
-  if (aDelta < aConf.REFRESH_TIMER_EXT) {
-    //console.log('Refresh not needed for Asset');
-    return
-  }
-  //console.error('Entering refresh for : ', this.uniqueIdentification);
-  if (this.assetType == "stock") {
-    //console.error('this.annotations: ', this.annotations);
+  try {
 
-    const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
-    //console.error('working on refresh for stock: ', aTickerAnnotation);
 
-    const aTicker = aTickerAnnotation["value"];
-    console.error('working on refresh for stock: ', aTicker);
+    //console.error('Entering refresh for Asset: ', this.name);
+    const aPreviousRefreshDate = this.lastRefresh
+    //console.log('aPreviousRefreshDate: ',aPreviousRefreshDate);
+    const aNow = new Date()
+    //console.log('aNow: ',aNow);
+    const aDelta = Math.abs(aNow - aPreviousRefreshDate) / 1000
+    //console.log('aDelta:', aDelta);
+    if (aDelta < aConf.REFRESH_TIMER_EXT) {
+      //console.log('Refresh not needed for Asset');
+      return
+    }
+    //console.error('Entering refresh for : ', this.uniqueIdentification);
+    if (this.assetType == "stock") {
+      //console.error('this.annotations: ', this.annotations);
 
-    getCompanyAndStockInfo(aTicker)
-      .then(([aCompanyInfo, aStockInfo]) => {
-        //console.log('aStockInfo:', aStockInfo["data"][0]);
-        //console.log('aCompanyInfo:', aCompanyInfo["data"]["yield"]);
+      const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
+      //console.error('working on refresh for stock: ', aTickerAnnotation);
 
-        this.unitValue = aStockInfo["data"][0]["regularMarketPrice"]
-        //let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
-        let aRawValue = aStockInfo["data"][0]["fiftyDayAverageChangePercent"] * 100
-        this.fiftyDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'fiftyDayAverageChangePercent');
-        if (aFiftyDayAverageChangePercentAnnotation) {
-          //console.log('aTickerAnnotation exists. updating it');
-          aFiftyDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        }
-        else {
-          //console.log('aTickerAnnotation do not exists. creating it');
-          let aNewAnotation = { key: "fiftyDayAverageChangePercent", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
-          this.annotations.push(aNewAnotation)
-        }
+      const aTicker = aTickerAnnotation["value"];
+      //console.error('working on refresh for stock: ', aTicker);
 
-        aRawValue = aStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
-        this.twoHundredDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        const aTwoHundredDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'twoHundredDayAverageChangePercent');
-        if (aTwoHundredDayAverageChangePercentAnnotation) {
-          //console.log('aTickerAnnotation exists. updating it');
-          aTwoHundredDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        }
-        else {
-          //console.log('aTickerAnnotation do not exists. creating it');
-          let aNewAnotation = { key: "twoHundredDayAverageChangePercent", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
-          this.annotations.push(aNewAnotation)
-        }
+      getCompanyAndStockInfo(aTicker)
+        .then(([aCompanyInfo, aStockInfo]) => {
+          //console.log('aStockInfo:', aStockInfo["data"][0]);
+          //console.log('aCompanyInfo:', aCompanyInfo["data"]["yield"]);
 
-        // aRawValue = aStockInfo["data"][0]["trailingAnnualDividendYield"] * 100
-        // this.twoHundredDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        // const aTrailingAnnualDividendYieldAnnotation = this.annotations.find(({ key }) => key === 'trailingAnnualDividendYield');
-        // if (aTrailingAnnualDividendYieldAnnotation) {
-        //   //console.log('aTickerAnnotation exists. updating it');
-        //   this.annotations["trailingAnnualDividendYield"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        // }
-        // else {
-        //   //console.log('aTickerAnnotation do not exists. creating it');
-        //   let aNewAnotation = { key: "trailingAnnualDividendYield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
-        //   this.annotations.push(aNewAnotation)
-        // }
-        //if (aRefreshNameToo) {
+          this.unitValue = aStockInfo["data"][0]["regularMarketPrice"]
+          //let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
+          let aRawValue = aStockInfo["data"][0]["fiftyDayAverageChangePercent"] * 100
+          this.fiftyDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          const aFiftyDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'fiftyDayAverageChangePercent');
+          if (aFiftyDayAverageChangePercentAnnotation) {
+            //console.log('aTickerAnnotation exists. updating it');
+            aFiftyDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          }
+          else {
+            //console.log('aTickerAnnotation do not exists. creating it');
+            let aNewAnotation = { key: "fiftyDayAverageChangePercent", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
+            this.annotations.push(aNewAnotation)
+          }
+
+          aRawValue = aStockInfo["data"][0]["twoHundredDayAverageChangePercent"] * 100
+          this.twoHundredDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          const aTwoHundredDayAverageChangePercentAnnotation = this.annotations.find(({ key }) => key === 'twoHundredDayAverageChangePercent');
+          if (aTwoHundredDayAverageChangePercentAnnotation) {
+            //console.log('aTickerAnnotation exists. updating it');
+            aTwoHundredDayAverageChangePercentAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          }
+          else {
+            //console.log('aTickerAnnotation do not exists. creating it');
+            let aNewAnotation = { key: "twoHundredDayAverageChangePercent", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
+            this.annotations.push(aNewAnotation)
+          }
+
+          // aRawValue = aStockInfo["data"][0]["trailingAnnualDividendYield"] * 100
+          // this.twoHundredDayAverageChangePercent = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          // const aTrailingAnnualDividendYieldAnnotation = this.annotations.find(({ key }) => key === 'trailingAnnualDividendYield');
+          // if (aTrailingAnnualDividendYieldAnnotation) {
+          //   //console.log('aTickerAnnotation exists. updating it');
+          //   this.annotations["trailingAnnualDividendYield"] = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          // }
+          // else {
+          //   //console.log('aTickerAnnotation do not exists. creating it');
+          //   let aNewAnotation = { key: "trailingAnnualDividendYield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
+          //   this.annotations.push(aNewAnotation)
+          // }
+          //if (aRefreshNameToo) {
           //console.log('Updating name too');
           //this.name = data["companyName"]
-        //}
+          //}
 
-        //company info
-        //Sometime it is missing
-        aRawValue = aCompanyInfo["data"]["yield"]["raw"] * 100
-        //console.error("aRawValue: ", aRawValue)
-        if (isNaN(aRawValue)) {
-          console.error("this stock do not have yield info: ", this.name)
-          aRawValue=0.0
-        }
-        const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
-        if (aYieldAnnotation) {
-          //console.log('aTickerAnnotation exists. updating it');
-          aYieldAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
-        }
-        else {
-          //console.log('aTickerAnnotation do not exists. creating it');
-          let aNewAnotation = { key: "yield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
-          this.annotations.push(aNewAnotation)
-        }
-        this.refreshAnnotationsStocks(aCompanyInfo, aStockInfo, aAvgYield)
+          //company info
+          //Sometime it is missing
+          aRawValue = aCompanyInfo["data"]["yield"]["raw"] * 100
+          //console.error("aRawValue: ", aRawValue)
+          if (isNaN(aRawValue)) {
+            console.error("this stock do not have yield info: ", this.name)
+            aRawValue = 0.0
+          }
+          const aYieldAnnotation = this.annotations.find(({ key }) => key === 'yield');
+          if (aYieldAnnotation) {
+            //console.log('aTickerAnnotation exists. updating it');
+            aYieldAnnotation.value = Math.round((aRawValue + Number.EPSILON) * 100) / 100;
+          }
+          else {
+            //console.log('aTickerAnnotation do not exists. creating it');
+            let aNewAnotation = { key: "yield", value: Math.round((aRawValue + Number.EPSILON) * 100) / 100 }
+            this.annotations.push(aNewAnotation)
+          }
+          this.refreshAnnotationsStocks(aCompanyInfo, aStockInfo, aAvgYield)
 
 
-        //console.log('Saving');
-        const aCurrentDate = new Date().toISOString()
-        //console.log('aCurrentDate:',aCurrentDate);
-        this.lastRefresh = aCurrentDate
-        this.save()
-      })
+          //console.log('Saving');
+          const aCurrentDate = new Date().toISOString()
+          //console.log('aCurrentDate:',aCurrentDate);
+          this.lastRefresh = aCurrentDate
+          this.save()
+        })
 
-  }
-  else if (this.assetType == "crypto") {
-    //IEX has no API to get name of crypto so aRefreshNameToo is not use here
-
-    const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
-    //console.error('working on refresh for stock: ', aTickerAnnotation);
-
-    const aTicker = aTickerAnnotation["value"];
-    console.error('working on refresh for crypto: ', aTicker);
-
-    fetch("https://cloud.iexapis.com/stable/crypto/" + aTicker + "/price?token=" + process.env.IEX_KEY, {
-      "method": "GET",
-      "headers": {}
-    })
-      .then(response => response.json())
-      .then(data => {
-        //console.log('Success:', data);
-        this.unitValue = data["price"]
-        //console.log('Price save:', data["price"]);
-        const aCurrentDate = new Date().toISOString()
-        //console.log('aCurrentDate:',aCurrentDate);
-        this.lastRefresh = aCurrentDate
-        this.save()
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-
-  }
-  else if (this.assetType == "option") {
-    console.log('refresh option info');
-    const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
-    //console.error('working on refresh for stock: ', aTickerAnnotation);
-
-    const aTicker = aTickerAnnotation["value"];
-    //console.log('working on refresh for stock: ', aTicker);
-
-    //For BOUM which is the only API i found working fine with option you need the ticker and expiration in epoch. I tried IEX, polygon but MBOUM is best
-
-    const aUtickerAnnotation = this.annotations.find(({ key }) => key === 'uticker');
-    //console.log('working on refresh for stock: ', aTickerAnnotation);
-
-    const aUticker = aUtickerAnnotation["value"];
-    //console.log('working on refresh for stock: ', aUticker);
-
-    const aExpirationAnnotation = this.annotations.find(({ key }) => key === 'expiration');
-    //console.log('working on refresh for aExpiration: ', aExpiration);
-
-    const aExpiration = aExpirationAnnotation["value"];
-    //console.log('working on refresh for aExpiration: ', aExpiration);
-
-    //https://api.polygon.io/v1/open-close/O:DIS220617C00270000/2021-07-22?adjusted=true&apiKey=XXXXXXXXXXXXXXXX
-    const today = new Date()
-    const yesterday = new Date(today)
-
-    yesterday.setDate(yesterday.getDate() - 1)
-    //today data are $$ and require paying plan
-    let aTodayIso = yesterday.toISOString();
-    aTodayIso = aTodayIso.substring(0, aTodayIso.indexOf('T'));
-    //console.log('aTodayIso:',aTodayIso);
-
-    //V3 MBOUM https://mboum.com/api/v1/op/option/?symbol=EUO&expiration=1660867200
-    let aUrlv3 = "https://mboum.com/api/v1/op/option/?symbol=" + aUticker + "&expiration=" + aExpiration
-    //console.log('aUrlv3:',aUrlv3);
-
-    //Call or put ?? try to find it from ticker
-    let aDirectionNoU = aTicker.replace(aUticker, '');
-    //console.log('aDirectionNoU:',aDirectionNoU);
-    let aDirectionLetter = aDirectionNoU.substring(6, 7);
-    //console.log('aDirectionLetter:',aDirectionLetter);
-    let aDirection = "unknow"
-    if (aDirectionLetter == "C") {
-      aDirection = "calls"
     }
-    else if (aDirectionLetter == "P") {
-      aDirection = "puts"
-    }
-    //console.log('aDirection:',aDirection);
+    else if (this.assetType == "crypto") {
+      //IEX has no API to get name of crypto so aRefreshNameToo is not use here
 
-    fetch(aUrlv3, {
-      "method": "GET",
-      "headers": { "X-Mboum-Secret": process.env.MBOUM_KEY }
-    })
-      .then(response => response.json())
-      .then(data => {
-        //console.log('Success:', data);
-        let aDataFromProvider = data["data"]["optionChain"]["result"][0]["options"][0]
-        //console.log('aDataFromProvider:', aDataFromProvider);
-        let aOptionDirection = aDataFromProvider[aDirection]
-        //console.log('aOptionDirection:', aOptionDirection);
-        //now need to find the one matching
-        const aMyOption = aOptionDirection.find(({ contractSymbol }) => contractSymbol == aTicker);
-        //console.log('aMyOption: ',aMyOption);
-        let aValueFromApi = parseFloat(aMyOption["lastPrice"]) * 100 //1 option contains 100 shares
-        let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
-        this.unitValue = aRoundedValue
-        //console.log('this.unitValue: ',this.unitValue);
-        //if (aRefreshNameToo) {
-          //console.log('Updating name too');
-          //this.name = data["companyName"]
-        //}
-        this.refreshAnnotationsOptions(aMyOption)
-        //console.log('Saving');
-        const aCurrentDate = new Date().toISOString()
-        //console.log('aCurrentDate:',aCurrentDate);
-        this.lastRefresh = aCurrentDate
-        this.save()
-        //console.log('Saved');
+      const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
+      //console.error('working on refresh for stock: ', aTickerAnnotation);
+
+      const aTicker = aTickerAnnotation["value"];
+      //console.error('working on refresh for crypto: ', aTicker);
+
+      fetch("https://cloud.iexapis.com/stable/crypto/" + aTicker + "/price?token=" + process.env.IEX_KEY, {
+        "method": "GET",
+        "headers": {}
       })
-      .catch((error) => {
-        console.error('Error:', error);
-        //console.error('response:', response);
-      });
+        .then(response => response.json())
+        .then(data => {
+          //console.log('Success:', data);
+          this.unitValue = data["price"]
+          //console.log('Price save:', data["price"]);
+          const aCurrentDate = new Date().toISOString()
+          //console.log('aCurrentDate:',aCurrentDate);
+          this.lastRefresh = aCurrentDate
+          this.save()
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+
+    }
+    else if (this.assetType == "option") {
+      //console.log('refresh option info');
+      const aTickerAnnotation = this.annotations.find(({ key }) => key === 'ticker');
+      //console.error('working on refresh for stock: ', aTickerAnnotation);
+
+      const aTicker = aTickerAnnotation["value"];
+      //console.log('working on refresh for stock: ', aTicker);
+
+      //For BOUM which is the only API i found working fine with option you need the ticker and expiration in epoch. I tried IEX, polygon but MBOUM is best
+
+      const aUtickerAnnotation = this.annotations.find(({ key }) => key === 'uticker');
+      //console.log('working on refresh for stock: ', aTickerAnnotation);
+
+      const aUticker = aUtickerAnnotation["value"];
+      //console.log('working on refresh for stock: ', aUticker);
+
+      const aExpirationAnnotation = this.annotations.find(({ key }) => key === 'expiration');
+      //console.log('working on refresh for aExpiration: ', aExpiration);
+
+      const aExpiration = aExpirationAnnotation["value"];
+      //console.log('working on refresh for aExpiration: ', aExpiration);
+
+      //Is it expire ??
+      var aExpirationAsDate = new Date(aExpiration * 1000)
+      //console.log('aExpirationAsDate: ', aExpirationAsDate);
+
+      //https://api.polygon.io/v1/open-close/O:DIS220617C00270000/2021-07-22?adjusted=true&apiKey=XXXXXXXXXXXXXXXX
+      const today = new Date()
+      const yesterday = new Date(today)
+
+      if (aExpirationAsDate < today) {
+        //console.log('expired: ');
+      }
+      else {
+        //V3 MBOUM https://mboum.com/api/v1/op/option/?symbol=EUO&expiration=1660867200
+        let aUrlv3 = "https://mboum.com/api/v1/op/option/?symbol=" + aUticker + "&expiration=" + aExpiration
+        //console.log('aUrlv3:',aUrlv3);
+
+        //Call or put ?? try to find it from ticker
+        let aDirectionNoU = aTicker.replace(aUticker, '');
+        //console.log('aDirectionNoU:',aDirectionNoU);
+        let aDirectionLetter = aDirectionNoU.substring(6, 7);
+        //console.log('aDirectionLetter:',aDirectionLetter);
+        let aDirection = "unknow"
+        if (aDirectionLetter == "C") {
+          aDirection = "calls"
+        }
+        else if (aDirectionLetter == "P") {
+          aDirection = "puts"
+        }
+        //console.log('aDirection:',aDirection);
+
+        fetch(aUrlv3, {
+          "method": "GET",
+          "headers": { "X-Mboum-Secret": process.env.MBOUM_KEY }
+        })
+          .then(response => response.json())
+          .then(data => {
+            //console.log('Success:', data);
+            let aDataFromProvider = data["data"]["optionChain"]["result"][0]["options"][0]
+            //console.log('aDataFromProvider:', aDataFromProvider);
+            let aOptionDirection = aDataFromProvider[aDirection]
+            //console.log('aOptionDirection:', aOptionDirection);
+            //now need to find the one matching
+            const aMyOption = aOptionDirection.find(({ contractSymbol }) => contractSymbol == aTicker);
+            //console.log('aMyOption: ',aMyOption);
+            let aValueFromApi = parseFloat(aMyOption["lastPrice"]) * 100 //1 option contains 100 shares
+            let aRoundedValue = Math.round((aValueFromApi + Number.EPSILON) * 100) / 100;
+            this.unitValue = aRoundedValue
+            //console.log('this.unitValue: ',this.unitValue);
+            //if (aRefreshNameToo) {
+            //console.log('Updating name too');
+            //this.name = data["companyName"]
+            //}
+            this.refreshAnnotationsOptions(aMyOption)
+            //console.log('Saving');
+            const aCurrentDate = new Date().toISOString()
+            //console.log('aCurrentDate:',aCurrentDate);
+            this.lastRefresh = aCurrentDate
+            this.save()
+            //console.log('Saved');
+          })
+          .catch((error) => {
+            console.error('Error for :', this.name, '.Details: ', error);
+            //console.error('response:', response);
+          });
+
+      }
+
+
+
+
+    }
+    else {
+      console.error('unknow Asset type:', this);
+    }
+    //console.log('returning from Asset refresh');
+    return this.name
+  } catch (error) {
+    console.error('error is', error);
+    // expected output: ReferenceError: nonExistentFunction is not defined
+    // Note - error messages will vary depending on browser
   }
-  else {
-    console.error('unknow Asset type:', this);
-  }
-  //console.log('returning from Asset refresh');
-  return this.name
 }
 
 module.exports = mongoose.models.Asset || mongoose.model('Asset', AssetSchema)
