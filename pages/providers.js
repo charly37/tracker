@@ -12,6 +12,7 @@ export function TableScrollArea() {
       {
         "uniqueIdentification": "5145245",
         "name": "Long Term",
+        "value": 5,
         "annotations": [{ "key": "myNotes", "value": "value1" }, { "key": "key2", "value": "value2" }]
       },
     ])
@@ -24,21 +25,34 @@ export function TableScrollArea() {
       });
   };
 
+  function getSplitByProviders() {
+    return fetch('/api/holdings?providers=a')
+      .then((res) => res.json())
+      .catch(error => {
+        console.error('There was an error to get providers!', error);
+      });
+  };
+
   // Request both students and scores in parallel and return a Promise for both values.
   // `Promise.all` returns a new Promise that resolves when all of its arguments resolve.
   function getHoldingsAndTransactions() {
     //console.log("building promise");
-    return Promise.all([getProviders()])
+    return Promise.all([getProviders(),getSplitByProviders()])
   }
 
   // When this Promise resolves, both values will be available.
   function loadData() {
     getHoldingsAndTransactions()
-      .then(([aProviders]) => {
+      .then(([aProviders,aSplitByProviders]) => {
         // both have loaded!
         //console.log("both have loaded");
-        //console.log(aProviders);
-        //console.log(aProviders.data);
+        console.log('aProviders.data:',aProviders.data);
+        console.log('aSplitByProviders.data',aSplitByProviders.data);
+        aProviders.data.forEach(element => {
+          console.log('element:',element);
+          element.value=aSplitByProviders.data[element.uniqueIdentification]
+
+        });
         setLoading(false)
         setProviders(aProviders.data)
       })
@@ -62,6 +76,7 @@ export function TableScrollArea() {
         </Link>
       </td>
       <td>{row.uniqueIdentification}</td>
+      <td>{row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
       <td>{row.annotations.find(x => x.key === 'myNotes').value}</td>
     </tr>
   ));
@@ -69,7 +84,7 @@ export function TableScrollArea() {
   return (
     <div>
       <Button>
-            <Link href={"/addproviders"}>
+            <Link href={"/addprovider"}>
         <a>add an Provider</a>
       </Link>
       </Button>
@@ -78,6 +93,7 @@ export function TableScrollArea() {
           <tr>
             <th>name</th>
             <th>uniqueIdentification</th>
+            <th>value</th>
             <th>my Notes</th>
           </tr>
         </thead>

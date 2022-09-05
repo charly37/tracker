@@ -1,10 +1,6 @@
 import dbConnect from '../lib/dbConnect'
 import Holding from '../models/Holding'
 
-console.log('bb1: ');
-
-
-
 async function bb() {
     console.log('bb0: ');
 
