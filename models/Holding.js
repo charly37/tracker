@@ -83,6 +83,12 @@ HoldingSchema.methods.refreshAnnotations = function (iAvgYield, iAsset) {
   }
 }
 
+HoldingSchema.methods.clearCache = async function () {
+  this.valueSplitProviderCached = []
+  this.sharesSplitProviderCached = []
+  this.actualValueCached = 0
+}
+
 HoldingSchema.methods.refresh = async function (iAvgYield) {
   //console.error('Entering holding refresh for : ', this.name);
   const aPreviousRefreshDate = this.lastRefresh
@@ -96,15 +102,16 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
     return
   }
   //console.log('Refreshing holding : ', this.name);
+
+  //clean old cache info
+  this.clearCache()
+
   //call refresh on asset??
   let actualValue = 0
   const aAsset = await Asset.find({ uniqueIdentification: this.assetInfo })
   //console.log('aAsset: ',aAsset);
   //aAsset.refresh()
   const aActualAssetPrice = aAsset[0].unitValue
-
-  //Clean up cache - otherwise you keep wrong/old provider forever in the list
-  this.valueSplitProviderCached=[]
 
   //call refresh on all Tx
   const aMyHoldingId = this.uniqueIdentification
@@ -117,25 +124,18 @@ HoldingSchema.methods.refresh = async function (iAvgYield) {
     //console.log('refresh aOneAsset: ',aRefreshStatus);
     let aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
     if (!aCheckHoldingTypeMandatoryAnnotation) {
-      console.log('New provider.');
+      //console.log('New provider1.');
       let aNewProviderHoldings = { provider: aOneTrx.provider, amount: 0 }
       this.valueSplitProviderCached.push(aNewProviderHoldings)
     }
-    else {
-      //reset 0
-      //why ??
-      //aCheckHoldingTypeMandatoryAnnotation.amount = 0
-    }
+
     let aSharesForProvider = this.sharesSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
     if (!aSharesForProvider) {
-      console.log('New provider.');
+      //console.log('New provider2.');
       let aNewProviderHoldings = { provider: aOneTrx.provider, amount: 0 }
       this.sharesSplitProviderCached.push(aNewProviderHoldings)
     }
-    else {
-      //reset 0
-      //aSharesForProvider.amount = 0
-    }
+
     //now it should ALWAYS exists
     aCheckHoldingTypeMandatoryAnnotation = this.valueSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
     aSharesForProvider = this.sharesSplitProviderCached.find(({ provider }) => provider === aOneTrx.provider);
